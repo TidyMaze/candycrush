@@ -72,20 +72,24 @@ func draw(window *app.Window) error {
 			println("New frame")
 
 			gtx := app.NewContext(&ops, e)
-
-			for i := 0; i < gameState.Board.Height; i++ {
-				for j := 0; j < gameState.Board.Width; j++ {
-					drawCell(cellSizeDp, gtx, j, i, 20, gameState.Board.Cells[i][j])
-				}
-			}
-
-			title := material.Label(theme, unit.Sp(24), fmt.Sprintf("Tick: %d", displayedTick))
-
-			title.Color = maroon
-			title.Alignment = text.Start
-			title.Layout(gtx)
-
+			drawGrid(gtx)
+			drawTick(theme, maroon, gtx)
 			e.Frame(gtx.Ops)
+		}
+	}
+}
+
+func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context) {
+	title := material.Label(theme, unit.Sp(24), fmt.Sprintf("Tick: %d", displayedTick))
+	title.Color = maroon
+	title.Alignment = text.Start
+	title.Layout(gtx)
+}
+
+func drawGrid(gtx layout.Context) {
+	for i := 0; i < gameState.Board.Height; i++ {
+		for j := 0; j < gameState.Board.Width; j++ {
+			drawCell(cellSizeDp, gtx, j, i, 20, gameState.Board.Cells[i][j])
 		}
 	}
 }
