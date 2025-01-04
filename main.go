@@ -27,9 +27,10 @@ const cellSizeDp = 100
 func main() {
 	go func() {
 		window := new(app.Window)
+
 		window.Option(app.Size(
-			unit.Dp(float32(gameState.Board.Width*cellSizeDp/2)),
-			unit.Dp(float32(gameState.Board.Height*cellSizeDp/2)),
+			unit.Dp(float32((gameState.Board.Width*cellSizeDp)/2)),
+			unit.Dp(float32((gameState.Board.Height*cellSizeDp)/2)),
 		))
 
 		err := run(window)
