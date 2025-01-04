@@ -22,7 +22,7 @@ var displayedTick int = 0
 var engine Engine = Engine{}
 var gameState State = engine.InitRandom()
 
-const cellSizeDp = 100
+const cellSizeDp = unit.Dp(75)
 
 const textSize = unit.Sp(24)
 
@@ -31,8 +31,8 @@ func main() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(float32(gameState.Board.Width*cellSizeDp)),
-			unit.Dp(float32(gameState.Board.Height*cellSizeDp)),
+			unit.Dp(gameState.Board.Width)*cellSizeDp,
+			unit.Dp(gameState.Board.Height)*cellSizeDp,
 		))
 
 		err := run(window)
@@ -96,11 +96,11 @@ func drawGrid(gtx layout.Context) {
 	}
 }
 
-func drawCell(cellSize int, gtx layout.Context, cellX int, cellY int, round int, cell Cell) {
-	x0 := gtx.Dp(unit.Dp(cellX * cellSize))
-	y0 := gtx.Dp(unit.Dp(cellY * cellSize))
-	x1 := gtx.Dp(unit.Dp((cellX + 1) * cellSize))
-	y1 := gtx.Dp(unit.Dp((cellY + 1) * cellSize))
+func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round int, cell Cell) {
+	x0 := gtx.Dp(unit.Dp(cellX) * cellSize)
+	y0 := gtx.Dp(unit.Dp(cellY) * cellSize)
+	x1 := gtx.Dp(unit.Dp(cellX+1) * cellSize)
+	y1 := gtx.Dp(unit.Dp(cellY+1) * cellSize)
 
 	rect := clip.RRect{
 		Rect: image.Rect(x0, y0, x1, y1),
