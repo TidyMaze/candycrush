@@ -29,8 +29,8 @@ func main() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(float32((gameState.Board.Width*cellSizeDp)/2)),
-			unit.Dp(float32((gameState.Board.Height*cellSizeDp)/2)),
+			unit.Dp(float32(gameState.Board.Width*cellSizeDp)),
+			unit.Dp(float32(gameState.Board.Height*cellSizeDp)),
 		))
 
 		err := run(window)
@@ -95,8 +95,13 @@ func drawGrid(gtx layout.Context) {
 }
 
 func drawCell(cellSize int, gtx layout.Context, cellX int, cellY int, round int, cell Cell) {
+	x0 := gtx.Dp(unit.Dp(cellX * cellSize))
+	y0 := gtx.Dp(unit.Dp(cellY * cellSize))
+	x1 := gtx.Dp(unit.Dp((cellX + 1) * cellSize))
+	y1 := gtx.Dp(unit.Dp((cellY + 1) * cellSize))
+
 	rect := clip.RRect{
-		Rect: image.Rect(cellX*cellSize, cellY*cellSize, (cellX+1)*cellSize, (cellY+1)*cellSize),
+		Rect: image.Rect(x0, y0, x1, y1),
 		SE:   round,
 		SW:   round,
 		NW:   round,
