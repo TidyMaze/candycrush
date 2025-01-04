@@ -70,9 +70,7 @@ func draw(window *app.Window) error {
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
-
 			println("New frame")
-
 			gtx := app.NewContext(&ops, e)
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
