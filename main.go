@@ -24,6 +24,8 @@ var gameState State = engine.InitRandom()
 
 const cellSizeDp = 100
 
+const textSize = unit.Sp(24)
+
 func main() {
 	go func() {
 		window := new(app.Window)
@@ -73,14 +75,14 @@ func draw(window *app.Window) error {
 
 			gtx := app.NewContext(&ops, e)
 			drawGrid(gtx)
-			drawTick(theme, maroon, gtx)
+			drawTick(theme, maroon, gtx, textSize)
 			e.Frame(gtx.Ops)
 		}
 	}
 }
 
-func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context) {
-	title := material.Label(theme, unit.Sp(24), fmt.Sprintf("Tick: %d", displayedTick))
+func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context, textSize unit.Sp) {
+	title := material.Label(theme, textSize, fmt.Sprintf("Tick: %d", displayedTick))
 	title.Color = maroon
 	title.Alignment = text.Start
 	title.Layout(gtx)
