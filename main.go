@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gioui.org/app"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -60,13 +61,12 @@ func invalidator(tickChannel chan int, window *app.Window) {
 }
 
 func draw(window *app.Window) error {
-
-	maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-
 	theme := material.NewTheme()
 	var ops op.Ops
 	for {
 		switch e := window.Event().(type) {
+		case pointer.Event:
+			println("Click")
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
@@ -120,6 +120,7 @@ var greenColor = color.NRGBA{R: 0, G: 255, B: 0, A: 255}
 var blueColor = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
 var purpleColor = color.NRGBA{R: 128, G: 0, B: 128, A: 255}
 var orangeColor = color.NRGBA{R: 255, G: 165, B: 0, A: 255}
+var maroon = color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 
 func getColor(cell Cell) color.NRGBA {
 	switch cell {
