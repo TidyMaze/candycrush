@@ -108,8 +108,8 @@ func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
 	// set the absolute position of the cell
 	x0 := gtx.Dp(unit.Dp(c.X) * c.cellSize)
 	y0 := gtx.Dp(unit.Dp(c.Y) * c.cellSize)
-	x1 := gtx.Dp(unit.Dp(c.X)*c.cellSize + cellSizeDp)
-	y1 := gtx.Dp(unit.Dp(c.Y)*c.cellSize + cellSizeDp)
+	x1 := gtx.Dp(unit.Dp(c.X)*c.cellSize + c.cellSize)
+	y1 := gtx.Dp(unit.Dp(c.Y)*c.cellSize + c.cellSize)
 
 	round := 20
 
@@ -125,6 +125,7 @@ func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
 
 	paint.FillShape(gtx.Ops, cellColor, rect)
 
+	// set the clickable area using a button layout
 	return layout.Dimensions{
 		Size: image.Point{
 			X: int(c.cellSize),
