@@ -89,7 +89,7 @@ func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context, tex
 func drawGrid(gtx layout.Context) {
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
-			drawCell(cellSizeDp, gtx, j, i, 20, gameState.Board.Cells[i][j])
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
 		}
 	}
 }
@@ -97,11 +97,23 @@ func drawGrid(gtx layout.Context) {
 // Create a Clickable widget.
 var clickable widget.Clickable
 
-func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round int, cell Cell) {
-	x0 := gtx.Dp(unit.Dp(cellX) * cellSize)
-	y0 := gtx.Dp(unit.Dp(cellY) * cellSize)
-	x1 := gtx.Dp(unit.Dp(cellX+1) * cellSize)
-	y1 := gtx.Dp(unit.Dp(cellY+1) * cellSize)
+type CellWidget struct {
+	X, Y      int
+	Cell      Cell
+	cellSize  unit.Dp
+	clickable widget.Clickable
+}
+
+func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
+	// set the absolute position of the cell
+	op.Offset(image.Pt(c.X, c.Y)).Add(gtx.Ops)
+
+	x0 := gtx.Dp(unit.Dp(c.X) * c.cellSize)
+	y0 := gtx.Dp(unit.Dp(c.Y) * c.cellSize)
+	x1 := gtx.Dp(unit.Dp(c.X)*c.cellSize + cellSizeDp)
+	y1 := gtx.Dp(unit.Dp(c.Y)*c.cellSize + cellSizeDp)
+
+	round := 20
 
 	rect := clip.RRect{
 		Rect: image.Rect(x0, y0, x1, y1),
@@ -111,42 +123,27 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round 
 		NE:   round,
 	}.Op(gtx.Ops)
 
-	cellColor := getColor(cell)
+	cellColor := getColor(c.Cell)
 
 	paint.FillShape(gtx.Ops, cellColor, rect)
 
-	// add a button to the cell
+	return layout.Dimensions{
+		Size: image.Point{
+			X: int(c.cellSize),
+			Y: int(c.cellSize),
+		},
+	}
+}
 
-	// Use the layout to define the UI.
-	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		// Check if the rectangle was clicked.
-		if clickable.Clicked(gtx) {
-			log.Println("Rectangle clicked!")
+func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
+	cellWidget := CellWidget{
+		X:        cellX,
+		Y:        cellY,
+		Cell:     cell,
+		cellSize: cellSize,
+	}
 
-			// get click location from the clickable widget
-			clickLocation := clickable.History()[0].Position
-
-			println(fmt.Sprintf("Click location: %d, %d", clickLocation.X, clickLocation.Y))
-		}
-
-		// Use a ButtonLayout to make the rectangle clickable.
-
-		layout := material.ButtonLayout(theme, &clickable).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-			// Define the size of the rectangle.
-			size := image.Point{
-				X: gtx.Dp(cellSize),
-				Y: gtx.Dp(cellSize),
-			}
-
-			// Fill the rectangle with color.
-			paint.Fill(gtx.Ops, color.NRGBA{R: 100, G: 100, B: 100, A: 255})
-
-			// Return the dimensions of the rectangle.
-			return layout.Dimensions{Size: size}
-		})
-
-		return layout
-	})
+	cellWidget.Layout(gtx)
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
