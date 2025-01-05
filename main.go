@@ -146,8 +146,6 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round 
 		})
 
 		return layout
-
-		return layout
 	})
 }
 
