@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"gioui.org/app"
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"image"
 	"image/color"
@@ -26,6 +26,10 @@ var gameState State = engine.InitRandom()
 const cellSizeDp = unit.Dp(75)
 
 const textSize = unit.Sp(24)
+
+var button widget.Clickable
+
+var theme = material.NewTheme()
 
 func main() {
 	go func() {
@@ -61,16 +65,12 @@ func invalidator(tickChannel chan int, window *app.Window) {
 }
 
 func draw(window *app.Window) error {
-	theme := material.NewTheme()
 	var ops op.Ops
 	for {
 		switch e := window.Event().(type) {
-		case pointer.Event:
-			println("Click")
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
-			println("New frame")
 			gtx := app.NewContext(&ops, e)
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
@@ -94,6 +94,9 @@ func drawGrid(gtx layout.Context) {
 	}
 }
 
+// Create a Clickable widget.
+var clickable widget.Clickable
+
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round int, cell Cell) {
 	x0 := gtx.Dp(unit.Dp(cellX) * cellSize)
 	y0 := gtx.Dp(unit.Dp(cellY) * cellSize)
@@ -111,6 +114,41 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, round 
 	cellColor := getColor(cell)
 
 	paint.FillShape(gtx.Ops, cellColor, rect)
+
+	// add a button to the cell
+
+	// Use the layout to define the UI.
+	layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		// Check if the rectangle was clicked.
+		if clickable.Clicked(gtx) {
+			log.Println("Rectangle clicked!")
+
+			// get click location from the clickable widget
+			clickLocation := clickable.History()[0].Position
+
+			println(fmt.Sprintf("Click location: %d, %d", clickLocation.X, clickLocation.Y))
+		}
+
+		// Use a ButtonLayout to make the rectangle clickable.
+
+		layout := material.ButtonLayout(theme, &clickable).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			// Define the size of the rectangle.
+			size := image.Point{
+				X: gtx.Dp(cellSize),
+				Y: gtx.Dp(cellSize),
+			}
+
+			// Fill the rectangle with color.
+			paint.Fill(gtx.Ops, color.NRGBA{R: 100, G: 100, B: 100, A: 255})
+
+			// Return the dimensions of the rectangle.
+			return layout.Dimensions{Size: size}
+		})
+
+		return layout
+
+		return layout
+	})
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
