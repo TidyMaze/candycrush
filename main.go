@@ -106,8 +106,6 @@ type CellWidget struct {
 
 func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
 	// set the absolute position of the cell
-	op.Offset(image.Pt(c.X, c.Y)).Add(gtx.Ops)
-
 	x0 := gtx.Dp(unit.Dp(c.X) * c.cellSize)
 	y0 := gtx.Dp(unit.Dp(c.Y) * c.cellSize)
 	x1 := gtx.Dp(unit.Dp(c.X)*c.cellSize + cellSizeDp)
