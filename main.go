@@ -79,10 +79,10 @@ func draw(window *app.Window) error {
 			drawTick(theme, maroon, gtx, textSize)
 			drawCircle(0, 0, gtx, redColor)
 
-			windowWidth := cellSizeDp * unit.Dp(gameState.Board.Width)
-			windowHeight := cellSizeDp * unit.Dp(gameState.Board.Height)
+			windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
+			windowHeight := gtx.Dp(cellSizeDp) * gameState.Board.Height
 
-			drawCircle(gtx.Dp(windowWidth), gtx.Dp(windowHeight), gtx, redColor)
+			drawCircle(windowWidth, windowHeight, gtx, redColor)
 			drawCircles(gtx)
 			e.Frame(gtx.Ops)
 		}
@@ -125,8 +125,6 @@ func drawCircle(
 	println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
 
 	// offset
-	stack := op.Offset(image.Point{X: x, Y: y}).Push(gtx.Ops)
-	defer stack.Pop()
 
 	radius := 50
 
