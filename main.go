@@ -31,6 +31,8 @@ var theme = material.NewTheme()
 
 var clickable = widget.Clickable{}
 
+var circles []image.Point
+
 func main() {
 	go func() {
 		window := new(app.Window)
@@ -75,8 +77,16 @@ func draw(window *app.Window) error {
 
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
+			drawCircle(100, 100, gtx, redColor)
+			drawCircles(gtx)
 			e.Frame(gtx.Ops)
 		}
+	}
+}
+
+func drawCircles(gtx layout.Context) {
+	for _, circle := range circles {
+		drawCircle(circle.X, circle.Y, gtx, redColor)
 	}
 }
 
@@ -105,8 +115,8 @@ type CellWidget struct {
 func drawCircle(
 	x, y int,
 	gtx layout.Context,
+	color color.NRGBA,
 ) {
-
 	println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
 
 	// offset
@@ -119,7 +129,7 @@ func drawCircle(
 		Max: image.Point{X: x + 4, Y: y + 4},
 	}
 
-	paint.FillShape(gtx.Ops, color.NRGBA{R: 255, G: 0, B: 0, A: 255}, ellipse.Op(gtx.Ops))
+	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
 }
 
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
@@ -144,7 +154,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		y := cellY*gtx.Dp(cellWidget.cellSize) + last.Position.Y
 
 		// add a circle at the clicked position
-		drawCircle(int(x), int(y), gtx)
+		circles = append(circles, image.Point{X: int(x), Y: int(y)})
 	}
 
 	// offset
