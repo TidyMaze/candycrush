@@ -133,13 +133,18 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 	// use the clickable widget to detect clicks on a square
 	if clickable.Clicked(gtx) {
-		println(fmt.Sprintf("Clicked! %+v", clickable))
+		location := clickable.History()[0]
+
+		println(fmt.Sprintf("Clicked! first: %+v", location.Position))
 
 		// last location
 		last := clickable.History()[0]
 
+		x := cellX*gtx.Dp(cellWidget.cellSize) + last.Position.X
+		y := cellY*gtx.Dp(cellWidget.cellSize) + last.Position.Y
+
 		// add a circle at the clicked position
-		drawCircle(last.Position.X, last.Position.Y, gtx)
+		drawCircle(int(x), int(y), gtx)
 	}
 
 	// offset
