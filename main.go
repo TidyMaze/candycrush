@@ -77,7 +77,12 @@ func draw(window *app.Window) error {
 
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
-			drawCircle(100, 100, gtx, redColor)
+			drawCircle(0, 0, gtx, redColor)
+
+			windowWidth := cellSizeDp * unit.Dp(gameState.Board.Width)
+			windowHeight := cellSizeDp * unit.Dp(gameState.Board.Height)
+
+			drawCircle(gtx.Dp(windowWidth), gtx.Dp(windowHeight), gtx, redColor)
 			drawCircles(gtx)
 			e.Frame(gtx.Ops)
 		}
@@ -123,10 +128,13 @@ func drawCircle(
 	stack := op.Offset(image.Point{X: x, Y: y}).Push(gtx.Ops)
 	defer stack.Pop()
 
+	radius := 50
+
 	// draw the circle using clip
 	ellipse := clip.Ellipse{
-		Min: image.Point{X: x - 4, Y: y - 4},
-		Max: image.Point{X: x + 4, Y: y + 4},
+		// drawing with center at the coordinates
+		Min: image.Point{X: x - radius, Y: y - radius},
+		Max: image.Point{X: x + radius, Y: y + radius},
 	}
 
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
@@ -150,11 +158,11 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		// last location
 		last := clickable.History()[0]
 
-		x := cellX*gtx.Dp(cellWidget.cellSize) + last.Position.X
-		y := cellY*gtx.Dp(cellWidget.cellSize) + last.Position.Y
+		x := unit.Dp(cellX)*cellWidget.cellSize + unit.Dp(last.Position.X)
+		y := unit.Dp(cellY)*cellWidget.cellSize + unit.Dp(last.Position.Y)
 
 		// add a circle at the clicked position
-		circles = append(circles, image.Point{X: int(x), Y: int(y)})
+		circles = append(circles, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
 	}
 
 	// offset
