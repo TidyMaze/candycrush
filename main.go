@@ -5,7 +5,6 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -88,32 +87,11 @@ func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context, tex
 }
 
 func drawGrid(gtx layout.Context) {
-	//for i := 0; i < gameState.Board.Height; i++ {
-	//	for j := 0; j < gameState.Board.Width; j++ {
-	//		drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
-	//	}
-	//}
-
-	// use the clickable widget to detect clicks on a square
-	if clickable.Clicked(gtx) {
-		println("Clicked!")
-	}
-
-	// offset
-	op.Offset(image.Point{X: 30, Y: 30}).Add(gtx.Ops)
-
-	// draw the square
-	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		// draw the square
-		paint.Fill(gtx.Ops, color.NRGBA{R: 0x80, G: 0x80, B: 0x80, A: 0xff})
-
-		return layout.Dimensions{
-			Size: image.Point{
-				X: int(cellSizeDp),
-				Y: int(cellSizeDp),
-			},
+	for i := 0; i < gameState.Board.Height; i++ {
+		for j := 0; j < gameState.Board.Width; j++ {
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
 		}
-	})
+	}
 }
 
 type CellWidget struct {
@@ -121,37 +99,6 @@ type CellWidget struct {
 	Cell      Cell
 	cellSize  unit.Dp
 	clickable widget.Clickable
-}
-
-func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
-	// set the absolute position of the cell
-	x0 := gtx.Dp(unit.Dp(c.X) * c.cellSize)
-	y0 := gtx.Dp(unit.Dp(c.Y) * c.cellSize)
-	x1 := gtx.Dp(unit.Dp(c.X)*c.cellSize + c.cellSize)
-	y1 := gtx.Dp(unit.Dp(c.Y)*c.cellSize + c.cellSize)
-
-	round := 20
-
-	rect := clip.RRect{
-		Rect: image.Rect(x0, y0, x1, y1),
-		SE:   round,
-		SW:   round,
-		NW:   round,
-		NE:   round,
-	}.Op(gtx.Ops)
-
-	cellColor := getColor(c.Cell)
-
-	paint.FillShape(gtx.Ops, cellColor, rect)
-
-	// use the Clickable widget to detect clicks
-
-	return layout.Dimensions{
-		Size: image.Point{
-			X: int(c.cellSize),
-			Y: int(c.cellSize),
-		},
-	}
 }
 
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
@@ -163,7 +110,29 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		clickable: widget.Clickable{},
 	}
 
-	cellWidget.Layout(gtx)
+	// use the clickable widget to detect clicks on a square
+	if clickable.Clicked(gtx) {
+		println(fmt.Sprintf("Clicked! %+v", clickable))
+	}
+
+	// offset
+	stack := op.Offset(image.Point{X: cellX * gtx.Dp(cellWidget.cellSize), Y: cellY * gtx.Dp(cellWidget.cellSize)}).Push(gtx.Ops)
+
+	// draw the square
+	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		// draw the square
+		paint.Fill(gtx.Ops, getColor(cell))
+
+		return layout.Dimensions{
+			Size: image.Point{
+				X: gtx.Dp(cellSizeDp),
+				Y: gtx.Dp(cellSizeDp),
+			},
+		}
+	})
+
+	// reset the offset
+	stack.Pop()
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
