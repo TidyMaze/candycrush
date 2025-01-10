@@ -5,6 +5,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -101,6 +102,26 @@ type CellWidget struct {
 	clickable widget.Clickable
 }
 
+func drawCircle(
+	x, y int,
+	gtx layout.Context,
+) {
+
+	println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
+
+	// offset
+	stack := op.Offset(image.Point{X: x, Y: y}).Push(gtx.Ops)
+	defer stack.Pop()
+
+	// draw the circle using clip
+	ellipse := clip.Ellipse{
+		Min: image.Point{X: x - 4, Y: y - 4},
+		Max: image.Point{X: x + 4, Y: y + 4},
+	}
+
+	paint.FillShape(gtx.Ops, color.NRGBA{R: 255, G: 0, B: 0, A: 255}, ellipse.Op(gtx.Ops))
+}
+
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
 	cellWidget := CellWidget{
 		X:         cellX,
@@ -113,6 +134,12 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	// use the clickable widget to detect clicks on a square
 	if clickable.Clicked(gtx) {
 		println(fmt.Sprintf("Clicked! %+v", clickable))
+
+		// last location
+		last := clickable.History()[0]
+
+		// add a circle at the clicked position
+		drawCircle(last.Position.X, last.Position.Y, gtx)
 	}
 
 	// offset
