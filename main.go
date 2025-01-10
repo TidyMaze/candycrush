@@ -27,9 +27,9 @@ const cellSizeDp = unit.Dp(75)
 
 const textSize = unit.Sp(24)
 
-var button widget.Clickable
-
 var theme = material.NewTheme()
+
+var clickable = widget.Clickable{}
 
 func main() {
 	go func() {
@@ -72,6 +72,7 @@ func draw(window *app.Window) error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
+
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
 			e.Frame(gtx.Ops)
@@ -87,15 +88,33 @@ func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context, tex
 }
 
 func drawGrid(gtx layout.Context) {
-	for i := 0; i < gameState.Board.Height; i++ {
-		for j := 0; j < gameState.Board.Width; j++ {
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
-		}
-	}
-}
+	//for i := 0; i < gameState.Board.Height; i++ {
+	//	for j := 0; j < gameState.Board.Width; j++ {
+	//		drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
+	//	}
+	//}
 
-// Create a Clickable widget.
-var clickable widget.Clickable
+	// use the clickable widget to detect clicks on a square
+	if clickable.Clicked(gtx) {
+		println("Clicked!")
+	}
+
+	// offset
+	op.Offset(image.Point{X: 30, Y: 30}).Add(gtx.Ops)
+
+	// draw the square
+	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		// draw the square
+		paint.Fill(gtx.Ops, color.NRGBA{R: 0x80, G: 0x80, B: 0x80, A: 0xff})
+
+		return layout.Dimensions{
+			Size: image.Point{
+				X: int(cellSizeDp),
+				Y: int(cellSizeDp),
+			},
+		}
+	})
+}
 
 type CellWidget struct {
 	X, Y      int
@@ -125,7 +144,8 @@ func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
 
 	paint.FillShape(gtx.Ops, cellColor, rect)
 
-	// set the clickable area using a button layout
+	// use the Clickable widget to detect clicks
+
 	return layout.Dimensions{
 		Size: image.Point{
 			X: int(c.cellSize),
@@ -136,10 +156,11 @@ func (c *CellWidget) Layout(gtx layout.Context) layout.Dimensions {
 
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
 	cellWidget := CellWidget{
-		X:        cellX,
-		Y:        cellY,
-		Cell:     cell,
-		cellSize: cellSize,
+		X:         cellX,
+		Y:         cellY,
+		Cell:      cell,
+		cellSize:  cellSize,
+		clickable: widget.Clickable{},
 	}
 
 	cellWidget.Layout(gtx)
