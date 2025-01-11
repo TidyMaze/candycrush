@@ -29,8 +29,6 @@ const textSize = unit.Sp(24)
 
 var theme = material.NewTheme()
 
-var clickable = widget.Clickable{}
-
 var circles []image.Point
 
 func main() {
@@ -68,6 +66,10 @@ func invalidator(tickChannel chan int, window *app.Window) {
 
 func draw(window *app.Window) error {
 	var ops op.Ops
+
+	// create clickables
+	clickables = make([]widget.Clickable, gameState.Board.Width*gameState.Board.Height)
+
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
@@ -122,7 +124,7 @@ func drawCircle(
 	gtx layout.Context,
 	color color.NRGBA,
 ) {
-	println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
+	//println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
 
 	// offset
 
@@ -138,6 +140,8 @@ func drawCircle(
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
 }
 
+var clickables []widget.Clickable
+
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
 
 	if cellX < 0 || cellY < 0 {
@@ -149,12 +153,12 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: widget.Clickable{},
+		clickable: clickables[cellY*gameState.Board.Width+cellX],
 	}
 
 	// use the clickable widget to detect clicks on a square
-	if clickable.Clicked(gtx) {
-		location := clickable.History()[0]
+	if cellWidget.clickable.Clicked(gtx) {
+		location := cellWidget.clickable.History()[0]
 
 		if location.Position.X < 0 || location.Position.Y < 0 {
 			panic(fmt.Sprintf("Invalid negative click local position: %+v", location.Position))
@@ -163,7 +167,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		println(fmt.Sprintf("Clicked! first: %+v", location.Position))
 
 		// last location
-		last := clickable.History()[0]
+		last := cellWidget.clickable.History()[0]
 
 		x := unit.Dp(cellX)*cellWidget.cellSize + unit.Dp(last.Position.X)
 		y := unit.Dp(cellY)*cellWidget.cellSize + unit.Dp(last.Position.Y)
@@ -184,13 +188,13 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
 	}
 
-	print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
+	//print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
 
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 	defer stack.Pop()
 
 	// draw the square
-	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+	cellWidget.clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		// draw the square
 		paint.Fill(gtx.Ops, getColor(cell))
 
