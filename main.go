@@ -30,6 +30,7 @@ const textSize = unit.Sp(24)
 var theme = material.NewTheme()
 
 var circles []image.Point
+var circlesHovered []image.Point
 
 func main() {
 	go func() {
@@ -79,12 +80,12 @@ func draw(window *app.Window) error {
 
 			drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
-			drawCircle(0, 0, gtx, redColor)
+			drawCircle(0, 0, gtx, redColor, 50)
 
 			windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
 			windowHeight := gtx.Dp(cellSizeDp) * gameState.Board.Height
 
-			drawCircle(windowWidth, windowHeight, gtx, redColor)
+			drawCircle(windowWidth, windowHeight, gtx, redColor, 50)
 			drawCircles(gtx)
 			e.Frame(gtx.Ops)
 		}
@@ -93,7 +94,11 @@ func draw(window *app.Window) error {
 
 func drawCircles(gtx layout.Context) {
 	for _, circle := range circles {
-		drawCircle(circle.X, circle.Y, gtx, redColor)
+		drawCircle(circle.X, circle.Y, gtx, redColor, 50)
+	}
+
+	for _, circle := range circlesHovered {
+		drawCircle(circle.X, circle.Y, gtx, yellowColor, 20)
 	}
 }
 
@@ -123,12 +128,11 @@ func drawCircle(
 	x, y int,
 	gtx layout.Context,
 	color color.NRGBA,
+	radius int,
 ) {
 	//println(fmt.Sprintf("Drawing circle at %d, %d", x, y))
 
 	// offset
-
-	radius := 50
 
 	// draw the circle using clip
 	ellipse := clip.Ellipse{
@@ -178,6 +182,15 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 		// add a circle at the clicked position
 		circles = append(circles, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
+	}
+
+	if cellWidget.clickable.Hovered() {
+		println(fmt.Sprintf("Hovered cell at coord %d, %d", cellX, cellY))
+
+		x := unit.Dp(cellX) * cellWidget.cellSize
+		y := unit.Dp(cellY) * cellWidget.cellSize
+
+		circlesHovered = append(circlesHovered, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
 	}
 
 	// offset
