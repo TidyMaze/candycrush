@@ -136,17 +136,17 @@ func draw(window *app.Window) error {
 
 				ball := &balls[iBall]
 
-				ball.Acceleration.X = rand.Float32() * 50
-				ball.Acceleration.Y = rand.Float32() * 50
+				ball.Acceleration.X = rand.Float32()*5 + (targetLocation.X-ball.Location.X+ball.Acceleration.X)*0.01
+				ball.Acceleration.Y = rand.Float32()*5 + (targetLocation.Y-ball.Location.Y+ball.Acceleration.Y)*0.01
 
-				ball.Velocity.X += (targetLocation.X - ball.Location.X + ball.Acceleration.X) * 0.01
-				ball.Velocity.Y += (targetLocation.Y - ball.Location.Y + ball.Acceleration.Y) * 0.01
+				ball.Velocity.X += ball.Acceleration.X
+				ball.Velocity.Y += ball.Acceleration.Y
 
 				ball.Velocity.X *= 0.95
 				ball.Velocity.Y *= 0.95
 
-				ball.Location.X += ball.Velocity.X
-				ball.Location.Y += ball.Velocity.Y
+				ball.Location.X += ball.Velocity.X + 0.5*ball.Acceleration.X
+				ball.Location.Y += ball.Velocity.Y + 0.5*ball.Acceleration.Y
 
 				// draw a circle at the ball location
 				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, ball.color, 50)
