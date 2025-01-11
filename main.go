@@ -83,6 +83,9 @@ func draw(window *app.Window) error {
 
 	dragStart := f32.Point{X: -1, Y: -1}
 
+	ballLocation := f32.Point{X: 0, Y: 0}
+	targetLocation := f32.Point{X: 0, Y: 0}
+
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
@@ -134,6 +137,12 @@ func draw(window *app.Window) error {
 
 			println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
+			ballLocation.X += (targetLocation.X - ballLocation.X) * 0.1
+			ballLocation.Y += (targetLocation.Y - ballLocation.Y) * 0.1
+
+			// draw a circle at the ball location
+			drawCircle(int(ballLocation.X), int(ballLocation.Y), gtx, greenColor, 50)
+
 			// draw a circle at the mouse location
 			color := redColor
 
@@ -141,19 +150,28 @@ func draw(window *app.Window) error {
 				distance := distance(dragStart, mouseLocation)
 
 				if pressed {
-					color = orangeColor
+					color = slightOrange
 				}
 
 				if distance > 100 {
-					color = blueColor
+					color = slightBlue
+					targetLocation = dragStart
 				}
 
 				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
 			} else {
-				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 10)
+				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
 			}
 
 			e.Frame(gtx.Ops)
+
+			distanceBallTarget := distance(ballLocation, targetLocation)
+
+			if distanceBallTarget > 1 {
+				window.Invalidate()
+			} else {
+				ballLocation = targetLocation
+			}
 		}
 	}
 }
@@ -299,6 +317,11 @@ var purpleColor = color.NRGBA{R: 128, G: 0, B: 128, A: 255}
 var orangeColor = color.NRGBA{R: 255, G: 165, B: 0, A: 255}
 var maroon = color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 var slightDark = color.NRGBA{R: 0, G: 0, B: 0, A: 127}
+
+var slightGreen = color.NRGBA{R: 0, G: 255, B: 0, A: 127}
+var slightBlue = color.NRGBA{R: 0, G: 0, B: 255, A: 127}
+var slightRed = color.NRGBA{R: 255, G: 0, B: 0, A: 127}
+var slightOrange = color.NRGBA{R: 255, G: 165, B: 0, A: 127}
 
 func getColor(cell Cell) color.NRGBA {
 	switch cell {
