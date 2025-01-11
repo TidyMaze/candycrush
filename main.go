@@ -40,6 +40,9 @@ func main() {
 			unit.Dp(gameState.Board.Height)*cellSizeDp,
 		))
 
+		// create clickables
+		clickables = make([]widget.Clickable, gameState.Board.Width*gameState.Board.Height)
+
 		err := run(window)
 		if err != nil {
 			log.Fatal(err)
@@ -66,9 +69,6 @@ func invalidator(tickChannel chan int, window *app.Window) {
 
 func draw(window *app.Window) error {
 	var ops op.Ops
-
-	// create clickables
-	clickables = make([]widget.Clickable, gameState.Board.Width*gameState.Board.Height)
 
 	for {
 		switch e := window.Event().(type) {
@@ -116,7 +116,7 @@ type CellWidget struct {
 	X, Y      int
 	Cell      Cell
 	cellSize  unit.Dp
-	clickable widget.Clickable
+	clickable *widget.Clickable
 }
 
 func drawCircle(
@@ -153,7 +153,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: clickables[cellY*gameState.Board.Width+cellX],
+		clickable: &clickables[cellY*gameState.Board.Width+cellX],
 	}
 
 	// use the clickable widget to detect clicks on a square
