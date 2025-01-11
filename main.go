@@ -56,6 +56,11 @@ func main() {
 	app.Main()
 }
 
+type Ball struct {
+	Location f32.Point
+	Velocity f32.Point
+}
+
 func draw(window *app.Window) error {
 	var ops op.Ops
 
@@ -67,8 +72,12 @@ func draw(window *app.Window) error {
 
 	dragStart := f32.Point{X: -1, Y: -1}
 
-	ballLocation := f32.Point{X: 0, Y: 0}
-	ballVelocity := f32.Point{X: 0, Y: 0}
+	balls := make([]Ball, 0)
+	balls = append(balls, Ball{
+		Location: f32.Point{X: 0, Y: 0},
+		Velocity: f32.Point{X: 0, Y: 0},
+	})
+
 	targetLocation := f32.Point{X: 0, Y: 0}
 
 	for {
@@ -124,17 +133,22 @@ func draw(window *app.Window) error {
 
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
-			ballVelocity.X += (targetLocation.X - ballLocation.X) * 0.01
-			ballVelocity.Y += (targetLocation.Y - ballLocation.Y) * 0.01
+			for iBall, _ := range balls {
 
-			ballVelocity.X *= 0.95
-			ballVelocity.Y *= 0.95
+				ball := &balls[iBall]
 
-			ballLocation.X += ballVelocity.X
-			ballLocation.Y += ballVelocity.Y
+				ball.Velocity.X += (targetLocation.X - ball.Location.X) * 0.01
+				ball.Velocity.Y += (targetLocation.Y - ball.Location.Y) * 0.01
 
-			// draw a circle at the ball location
-			drawCircle(int(ballLocation.X), int(ballLocation.Y), gtx, greenColor, 50)
+				ball.Velocity.X *= 0.95
+				ball.Velocity.Y *= 0.95
+
+				ball.Location.X += ball.Velocity.X
+				ball.Location.Y += ball.Velocity.Y
+
+				// draw a circle at the ball location
+				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, greenColor, 50)
+			}
 
 			// draw a circle at the mouse location
 			color := redColor
@@ -156,6 +170,12 @@ func draw(window *app.Window) error {
 				if distance > 200 {
 					// reset the drag start
 					dragStart = f32.Point{X: -1, Y: -1}
+
+					// add a new ball
+					balls = append(balls, Ball{
+						Location: f32.Point{X: 0, Y: 0},
+						Velocity: f32.Point{X: 0, Y: 0},
+					})
 				}
 			} else {
 				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
