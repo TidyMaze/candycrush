@@ -157,7 +157,6 @@ func draw(window *app.Window) error {
 				window.Invalidate()
 			} else {
 				ballLocation = targetLocation
-				println("Ball reached target")
 			}
 		}
 	}
