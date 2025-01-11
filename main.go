@@ -78,6 +78,8 @@ func draw(window *app.Window) error {
 
 	var mouseLocation f32.Point
 
+	pressed := false
+
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
@@ -104,7 +106,7 @@ func draw(window *app.Window) error {
 			for {
 				ev, ok := source.Event(pointer.Filter{
 					Target: tag,
-					Kinds:  pointer.Move,
+					Kinds:  pointer.Move | pointer.Press | pointer.Release,
 				})
 
 				if !ok {
@@ -115,6 +117,10 @@ func draw(window *app.Window) error {
 					switch x.Kind {
 					case pointer.Move:
 						mouseLocation = x.Position
+					case pointer.Press:
+						pressed = true
+					case pointer.Release:
+						pressed = false
 					}
 				}
 			}
@@ -122,7 +128,12 @@ func draw(window *app.Window) error {
 			println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
 			// draw a circle at the mouse location
-			drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 50)
+			color := redColor
+			if pressed {
+				color = greenColor
+			}
+
+			drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, color, 50)
 
 			e.Frame(gtx.Ops)
 		}
