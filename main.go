@@ -152,6 +152,11 @@ func draw(window *app.Window) error {
 				}
 
 				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
+
+				if distance > 200 {
+					// reset the drag start
+					dragStart = f32.Point{X: -1, Y: -1}
+				}
 			} else {
 				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
 			}
