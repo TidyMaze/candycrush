@@ -139,8 +139,8 @@ func draw(window *app.Window) error {
 				frictionX := float32(0)
 				frictionY := float32(0)
 
-				ball.Acceleration.X = rand.Float32()*5 + (targetLocation.X-ball.Location.X)*0.01
-				ball.Acceleration.Y = rand.Float32()*5 + (targetLocation.Y-ball.Location.Y)*0.01
+				ball.Acceleration.X = rand.Float32() + (targetLocation.X-ball.Location.X)*0.01
+				ball.Acceleration.Y = rand.Float32() + (targetLocation.Y-ball.Location.Y)*0.01
 
 				if ball.Velocity.X != 0 || ball.Velocity.Y != 0 {
 					velocityMagnitude := float32(math.Sqrt(math.Pow(float64(ball.Velocity.X), 2) + math.Pow(float64(ball.Velocity.Y), 2)))
@@ -151,6 +151,29 @@ func draw(window *app.Window) error {
 
 					ball.Acceleration.X += frictionX
 					ball.Acceleration.Y += frictionY
+				}
+
+				// add repulsion from other balls
+				for jBall, _ := range balls {
+					if iBall == jBall {
+						continue
+					}
+
+					otherBall := &balls[jBall]
+
+					distanceX := otherBall.Location.X - ball.Location.X
+					distanceY := otherBall.Location.Y - ball.Location.Y
+
+					distance := float32(math.Sqrt(math.Pow(float64(distanceX), 2) + math.Pow(float64(distanceY), 2)))
+
+					repulsionRadius := float32(100)
+
+					if distance < repulsionRadius {
+						repulsionForce := 0.01 * (repulsionRadius - distance)
+
+						ball.Acceleration.X -= repulsionForce * (distanceX / distance)
+						ball.Acceleration.Y -= repulsionForce * (distanceY / distance)
+					}
 				}
 
 				ball.Velocity.X += ball.Acceleration.X
