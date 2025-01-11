@@ -184,6 +184,8 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
 	}
 
+	print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
+
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
 	// draw the square
