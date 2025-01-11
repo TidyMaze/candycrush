@@ -150,7 +150,7 @@ func draw(window *app.Window) error {
 
 				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
 			} else {
-				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 50)
+				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 10)
 			}
 
 			e.Frame(gtx.Ops)
