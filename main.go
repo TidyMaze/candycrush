@@ -187,6 +187,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
 
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
+	defer stack.Pop()
 
 	// draw the square
 	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -200,9 +201,6 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 			},
 		}
 	})
-
-	// reset the offset
-	stack.Pop()
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
