@@ -177,7 +177,14 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	}
 
 	// offset
-	stack := op.Offset(image.Point{X: cellX * gtx.Dp(cellWidget.cellSize), Y: cellY * gtx.Dp(cellWidget.cellSize)}).Push(gtx.Ops)
+	cellGlobalX := cellX * gtx.Dp(cellWidget.cellSize)
+	cellGlobalY := cellY * gtx.Dp(cellWidget.cellSize)
+
+	if cellGlobalX < 0 || cellGlobalY < 0 {
+		panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
+	}
+
+	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
 	// draw the square
 	clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
