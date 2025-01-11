@@ -68,6 +68,7 @@ func draw(window *app.Window) error {
 	dragStart := f32.Point{X: -1, Y: -1}
 
 	ballLocation := f32.Point{X: 0, Y: 0}
+	ballVelocity := f32.Point{X: 0, Y: 0}
 	targetLocation := f32.Point{X: 0, Y: 0}
 
 	for {
@@ -123,8 +124,11 @@ func draw(window *app.Window) error {
 
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
-			ballLocation.X += (targetLocation.X - ballLocation.X) * 0.1
-			ballLocation.Y += (targetLocation.Y - ballLocation.Y) * 0.1
+			ballVelocity.X += (targetLocation.X - ballLocation.X) * 0.01
+			ballVelocity.Y += (targetLocation.Y - ballLocation.Y) * 0.01
+
+			ballLocation.X += ballVelocity.X
+			ballLocation.Y += ballVelocity.Y
 
 			// draw a circle at the ball location
 			drawCircle(int(ballLocation.X), int(ballLocation.Y), gtx, greenColor, 50)
