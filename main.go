@@ -91,8 +91,11 @@ func draw(window *app.Window) error {
 				color:        randomColor(),
 			})
 
-			if len(balls) > 10000 {
-				balls = balls[1:]
+			keepMax := 1000
+
+			if len(balls) > keepMax {
+				// keep the last keepMax balls
+				balls = balls[len(balls)-keepMax:]
 			}
 
 			// sleep for a while
