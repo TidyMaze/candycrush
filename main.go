@@ -17,6 +17,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"os"
 	"time"
 )
@@ -80,6 +81,8 @@ func draw(window *app.Window) error {
 
 	pressed := false
 
+	dragStart := f32.Point{X: -1, Y: -1}
+
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
@@ -106,7 +109,7 @@ func draw(window *app.Window) error {
 			for {
 				ev, ok := source.Event(pointer.Filter{
 					Target: tag,
-					Kinds:  pointer.Move | pointer.Press | pointer.Release,
+					Kinds:  pointer.Move | pointer.Press | pointer.Release | pointer.Drag,
 				})
 
 				if !ok {
@@ -119,8 +122,12 @@ func draw(window *app.Window) error {
 						mouseLocation = x.Position
 					case pointer.Press:
 						pressed = true
+						dragStart = x.Position
 					case pointer.Release:
 						pressed = false
+						dragStart = f32.Point{X: -1, Y: -1}
+					case pointer.Drag:
+						mouseLocation = x.Position
 					}
 				}
 			}
@@ -129,15 +136,30 @@ func draw(window *app.Window) error {
 
 			// draw a circle at the mouse location
 			color := redColor
-			if pressed {
-				color = greenColor
-			}
 
-			drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, color, 50)
+			if dragStart.X != -1 && dragStart.Y != -1 {
+				distance := distance(dragStart, mouseLocation)
+
+				if pressed {
+					color = orangeColor
+				}
+
+				if distance > 100 {
+					color = blueColor
+				}
+
+				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
+			} else {
+				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 50)
+			}
 
 			e.Frame(gtx.Ops)
 		}
 	}
+}
+
+func distance(a, b f32.Point) float64 {
+	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
 }
 
 func drawCircles(gtx layout.Context) {
