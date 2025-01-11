@@ -151,6 +151,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	if clickable.Clicked(gtx) {
 		location := clickable.History()[0]
 
+		if location.Position.X < 0 || location.Position.Y < 0 {
+			panic(fmt.Sprintf("Invalid negative click position: %+v", location.Position))
+		}
+
 		println(fmt.Sprintf("Clicked! first: %+v", location.Position))
 
 		// last location
