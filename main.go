@@ -98,7 +98,7 @@ func drawCircles(gtx layout.Context) {
 	}
 
 	for _, circle := range circlesHovered {
-		drawCircle(circle.X, circle.Y, gtx, yellowColor, 20)
+		drawCircle(circle.X, circle.Y, gtx, slightDark, 20)
 	}
 }
 
@@ -187,8 +187,8 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	if cellWidget.clickable.Hovered() {
 		println(fmt.Sprintf("Hovered cell at coord %d, %d", cellX, cellY))
 
-		x := unit.Dp(cellX) * cellWidget.cellSize
-		y := unit.Dp(cellY) * cellWidget.cellSize
+		x := unit.Dp(cellX)*cellWidget.cellSize + cellWidget.cellSize/2
+		y := unit.Dp(cellY)*cellWidget.cellSize + cellWidget.cellSize/2
 
 		circlesHovered = append(circlesHovered, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
 	}
@@ -228,6 +228,7 @@ var blueColor = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
 var purpleColor = color.NRGBA{R: 128, G: 0, B: 128, A: 255}
 var orangeColor = color.NRGBA{R: 255, G: 165, B: 0, A: 255}
 var maroon = color.NRGBA{R: 127, G: 0, B: 0, A: 255}
+var slightDark = color.NRGBA{R: 0, G: 0, B: 0, A: 127}
 
 func getColor(cell Cell) color.NRGBA {
 	switch cell {
