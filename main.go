@@ -99,7 +99,7 @@ func draw(window *app.Window) error {
 			}
 
 			// sleep for a while
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
@@ -112,14 +112,10 @@ func draw(window *app.Window) error {
 
 			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
 
-			//drawGrid(gtx)
+			drawGrid(gtx)
 			//drawCircle(0, 0, gtx, redColor, 50)
 
-			//windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
-			//windowHeight := gtx.Dp(cellSizeDp) * gameState.Board.Height
-
-			//drawCircle(windowWidth, windowHeight, gtx, redColor, 50)
-			//drawCircles(gtx)
+			drawCircles(gtx)
 
 			// print the mouse position
 
