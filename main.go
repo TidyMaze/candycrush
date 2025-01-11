@@ -139,8 +139,8 @@ func draw(window *app.Window) error {
 				frictionX := float32(0)
 				frictionY := float32(0)
 
-				ball.Acceleration.X = rand.Float32() + (targetLocation.X-ball.Location.X)*0.01
-				ball.Acceleration.Y = rand.Float32() + (targetLocation.Y-ball.Location.Y)*0.01
+				ball.Acceleration.X = rand.Float32()*0.1 + (targetLocation.X-ball.Location.X)*0.01
+				ball.Acceleration.Y = rand.Float32()*0.1 + (targetLocation.Y-ball.Location.Y)*0.01
 
 				if ball.Velocity.X != 0 || ball.Velocity.Y != 0 {
 					velocityMagnitude := float32(math.Sqrt(math.Pow(float64(ball.Velocity.X), 2) + math.Pow(float64(ball.Velocity.Y), 2)))
