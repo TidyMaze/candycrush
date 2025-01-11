@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"gioui.org/app"
+	"gioui.org/f32"
+	"gioui.org/io/event"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -71,6 +74,10 @@ func invalidator(tickChannel chan int, window *app.Window) {
 func draw(window *app.Window) error {
 	var ops op.Ops
 
+	tag := new(bool)
+
+	var mouseLocation f32.Point
+
 	for {
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
@@ -78,15 +85,45 @@ func draw(window *app.Window) error {
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
 
-			drawGrid(gtx)
+			//drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
-			drawCircle(0, 0, gtx, redColor, 50)
+			//drawCircle(0, 0, gtx, redColor, 50)
 
-			windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
-			windowHeight := gtx.Dp(cellSizeDp) * gameState.Board.Height
+			//windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
+			//windowHeight := gtx.Dp(cellSizeDp) * gameState.Board.Height
 
-			drawCircle(windowWidth, windowHeight, gtx, redColor, 50)
-			drawCircles(gtx)
+			//drawCircle(windowWidth, windowHeight, gtx, redColor, 50)
+			//drawCircles(gtx)
+
+			// print the mouse position
+
+			event.Op(&ops, tag)
+
+			source := e.Source
+
+			for {
+				ev, ok := source.Event(pointer.Filter{
+					Target: tag,
+					Kinds:  pointer.Move,
+				})
+
+				if !ok {
+					break
+				}
+
+				if x, ok := ev.(pointer.Event); ok {
+					switch x.Kind {
+					case pointer.Move:
+						mouseLocation = x.Position
+					}
+				}
+			}
+
+			println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
+
+			// draw a circle at the mouse location
+			drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, redColor, 50)
+
 			e.Frame(gtx.Ops)
 		}
 	}
