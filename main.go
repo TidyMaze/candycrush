@@ -133,8 +133,8 @@ func drawCircle(
 	// draw the circle using clip
 	ellipse := clip.Ellipse{
 		// drawing with center at the coordinates
-		Min: image.Point{X: x - radius, Y: y - radius},
-		Max: image.Point{X: x + radius, Y: y + radius},
+		Min: image.Point{X: int(unit.Dp(x - radius)), Y: int(unit.Dp(y - radius))},
+		Max: image.Point{X: int(unit.Dp(x + radius)), Y: int(unit.Dp(y + radius))},
 	}
 
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
@@ -164,7 +164,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 			panic(fmt.Sprintf("Invalid negative click local position: %+v", location.Position))
 		}
 
-		println(fmt.Sprintf("Clicked! first: %+v", location.Position))
+		println(fmt.Sprintf("Clicked! %d, %d for cell at coord %d, %d", location.Position.X, location.Position.Y, cellX, cellY))
 
 		// last location
 		last := cellWidget.clickable.History()[0]
