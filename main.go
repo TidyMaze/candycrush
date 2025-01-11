@@ -130,8 +130,8 @@ func draw(window *app.Window) error {
 			ballLocation.X += ballVelocity.X
 			ballLocation.Y += ballVelocity.Y
 
-			ballVelocity.X *= 0.99
-			ballVelocity.Y *= 0.99
+			ballVelocity.X *= 0.95
+			ballVelocity.Y *= 0.95
 
 			// draw a circle at the ball location
 			drawCircle(int(ballLocation.X), int(ballLocation.Y), gtx, greenColor, 50)
@@ -158,13 +158,7 @@ func draw(window *app.Window) error {
 
 			e.Frame(gtx.Ops)
 
-			distanceBallTarget := distance(ballLocation, targetLocation)
-
-			if distanceBallTarget > 1 {
-				window.Invalidate()
-			} else {
-				ballLocation = targetLocation
-			}
+			window.Invalidate()
 		}
 	}
 }
