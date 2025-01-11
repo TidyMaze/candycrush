@@ -10,7 +10,6 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -21,8 +20,6 @@ import (
 	"math/rand"
 	"os"
 )
-
-var displayedTick int = 0
 
 var engine Engine = Engine{}
 var gameState State = engine.InitRandom()
@@ -92,7 +89,6 @@ func draw(window *app.Window) error {
 			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
 
 			//drawGrid(gtx)
-			drawTick(theme, maroon, gtx, textSize)
 			//drawCircle(0, 0, gtx, redColor, 50)
 
 			//windowWidth := gtx.Dp(cellSizeDp) * gameState.Board.Width
@@ -139,8 +135,8 @@ func draw(window *app.Window) error {
 
 				ball := &balls[iBall]
 
-				ball.Velocity.X += (targetLocation.X - ball.Location.X) * 0.01
-				ball.Velocity.Y += (targetLocation.Y - ball.Location.Y) * 0.01
+				ball.Velocity.X += (targetLocation.X-ball.Location.X)*0.01 + rand.Float32()*2
+				ball.Velocity.Y += (targetLocation.Y-ball.Location.Y)*0.01 + rand.Float32()*2
 
 				ball.Velocity.X *= 0.95
 				ball.Velocity.Y *= 0.95
@@ -212,13 +208,6 @@ func drawCircles(gtx layout.Context) {
 	for _, circle := range circlesHovered {
 		drawCircle(circle.X, circle.Y, gtx, slightDark, 20)
 	}
-}
-
-func drawTick(theme *material.Theme, maroon color.NRGBA, gtx layout.Context, textSize unit.Sp) {
-	title := material.Label(theme, textSize, fmt.Sprintf("Tick: %d", displayedTick))
-	title.Color = maroon
-	title.Alignment = text.Start
-	title.Layout(gtx)
 }
 
 func drawGrid(gtx layout.Context) {
