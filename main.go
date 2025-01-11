@@ -139,6 +139,11 @@ func drawCircle(
 }
 
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
+
+	if cellX < 0 || cellY < 0 {
+		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
+	}
+
 	cellWidget := CellWidget{
 		X:         cellX,
 		Y:         cellY,
@@ -152,7 +157,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		location := clickable.History()[0]
 
 		if location.Position.X < 0 || location.Position.Y < 0 {
-			panic(fmt.Sprintf("Invalid negative click position: %+v", location.Position))
+			panic(fmt.Sprintf("Invalid negative click local position: %+v", location.Position))
 		}
 
 		println(fmt.Sprintf("Clicked! first: %+v", location.Position))
@@ -162,6 +167,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 		x := unit.Dp(cellX)*cellWidget.cellSize + unit.Dp(last.Position.X)
 		y := unit.Dp(cellY)*cellWidget.cellSize + unit.Dp(last.Position.Y)
+
+		if x < 0 || y < 0 {
+			panic(fmt.Sprintf("Invalid negative click global position: %+v", location.Position))
+		}
 
 		// add a circle at the clicked position
 		circles = append(circles, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
