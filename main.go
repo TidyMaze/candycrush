@@ -19,7 +19,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"time"
 )
 
 var displayedTick int = 0
@@ -55,21 +54,6 @@ func main() {
 		os.Exit(0)
 	}()
 	app.Main()
-}
-
-func tickEmitter(tickChannel chan int) {
-	for i := 0; ; i++ {
-		tickChannel <- i
-		time.Sleep(1 * time.Second)
-	}
-}
-
-func invalidator(tickChannel chan int, window *app.Window) {
-	for t := range tickChannel {
-		println(fmt.Sprintf("Tick: %d", t))
-		displayedTick = t
-		window.Invalidate()
-	}
 }
 
 func draw(window *app.Window) error {
@@ -358,10 +342,6 @@ func getColor(cell Cell) color.NRGBA {
 
 func run(window *app.Window) error {
 
-	tickChannel := make(chan int)
-
-	go tickEmitter(tickChannel)
-	go invalidator(tickChannel, window)
 	draw(window)
 
 	return nil
