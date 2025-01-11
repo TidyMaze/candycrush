@@ -132,6 +132,9 @@ func draw(window *app.Window) error {
 
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
+			// draw circle at the target location
+			drawCircle(int(targetLocation.X), int(targetLocation.Y), gtx, redColor, 10)
+
 			for iBall, _ := range balls {
 
 				ball := &balls[iBall]
@@ -144,7 +147,7 @@ func draw(window *app.Window) error {
 
 				if ball.Velocity.X != 0 || ball.Velocity.Y != 0 {
 					velocityMagnitude := float32(math.Sqrt(math.Pow(float64(ball.Velocity.X), 2) + math.Pow(float64(ball.Velocity.Y), 2)))
-					frictionForce := 0.01 * velocityMagnitude
+					frictionForce := 0.04 * velocityMagnitude
 
 					frictionX = -frictionForce * (ball.Velocity.X / velocityMagnitude)
 					frictionY = -frictionForce * (ball.Velocity.Y / velocityMagnitude)
@@ -285,15 +288,6 @@ func drawCircle(
 	}
 
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
-
-	// draw the circle using clip
-	ellipse2 := clip.Ellipse{
-		// drawing with center at the coordinates
-		Min: image.Point{X: int(unit.Dp(x - radius - 5)), Y: int(unit.Dp(y - radius - 5))},
-		Max: image.Point{X: int(unit.Dp(x + radius + 5)), Y: int(unit.Dp(y + radius + 5))},
-	}
-
-	paint.FillShape(gtx.Ops, color, ellipse2.Op(gtx.Ops))
 }
 
 var clickables []widget.Clickable
