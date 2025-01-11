@@ -93,6 +93,8 @@ func draw(window *app.Window) error {
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
 
+			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
+
 			//drawGrid(gtx)
 			drawTick(theme, maroon, gtx, textSize)
 			//drawCircle(0, 0, gtx, redColor, 50)
@@ -135,7 +137,7 @@ func draw(window *app.Window) error {
 				}
 			}
 
-			println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
+			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
 			ballLocation.X += (targetLocation.X - ballLocation.X) * 0.1
 			ballLocation.Y += (targetLocation.Y - ballLocation.Y) * 0.1
@@ -230,6 +232,15 @@ func drawCircle(
 	}
 
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
+
+	// draw the circle using clip
+	ellipse2 := clip.Ellipse{
+		// drawing with center at the coordinates
+		Min: image.Point{X: int(unit.Dp(x - radius - 5)), Y: int(unit.Dp(y - radius - 5))},
+		Max: image.Point{X: int(unit.Dp(x + radius + 5)), Y: int(unit.Dp(y + radius + 5))},
+	}
+
+	paint.FillShape(gtx.Ops, color, ellipse2.Op(gtx.Ops))
 }
 
 var clickables []widget.Clickable
