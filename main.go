@@ -91,6 +91,10 @@ func draw(window *app.Window) error {
 				color:        randomColor(),
 			})
 
+			if len(balls) > 1000 {
+				balls = balls[1:]
+			}
+
 			// sleep for a while
 			time.Sleep(100 * time.Millisecond)
 		}
