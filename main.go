@@ -55,9 +55,10 @@ func main() {
 }
 
 type Ball struct {
-	Location f32.Point
-	Velocity f32.Point
-	color    color.NRGBA
+	Location     f32.Point
+	Velocity     f32.Point
+	Acceleration f32.Point
+	color        color.NRGBA
 }
 
 func draw(window *app.Window) error {
@@ -135,8 +136,11 @@ func draw(window *app.Window) error {
 
 				ball := &balls[iBall]
 
-				ball.Velocity.X += (targetLocation.X-ball.Location.X)*0.01 + rand.Float32()*2
-				ball.Velocity.Y += (targetLocation.Y-ball.Location.Y)*0.01 + rand.Float32()*2
+				ball.Acceleration.X = rand.Float32() * 5
+				ball.Acceleration.Y = rand.Float32() * 5
+
+				ball.Velocity.X += (targetLocation.X-ball.Location.X)*0.01 + ball.Acceleration.X
+				ball.Velocity.Y += (targetLocation.Y-ball.Location.Y)*0.01 + ball.Acceleration.Y
 
 				ball.Velocity.X *= 0.95
 				ball.Velocity.Y *= 0.95
