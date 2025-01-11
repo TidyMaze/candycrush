@@ -18,6 +18,7 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 )
 
@@ -59,6 +60,7 @@ func main() {
 type Ball struct {
 	Location f32.Point
 	Velocity f32.Point
+	color    color.NRGBA
 }
 
 func draw(window *app.Window) error {
@@ -147,7 +149,7 @@ func draw(window *app.Window) error {
 				ball.Location.Y += ball.Velocity.Y
 
 				// draw a circle at the ball location
-				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, greenColor, 50)
+				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, ball.color, 50)
 			}
 
 			// draw a circle at the mouse location
@@ -175,6 +177,7 @@ func draw(window *app.Window) error {
 					balls = append(balls, Ball{
 						Location: f32.Point{X: 0, Y: 0},
 						Velocity: f32.Point{X: 0, Y: 0},
+						color:    randomColor(),
 					})
 				}
 			} else {
@@ -185,6 +188,15 @@ func draw(window *app.Window) error {
 
 			window.Invalidate()
 		}
+	}
+}
+
+func randomColor() color.NRGBA {
+	return color.NRGBA{
+		R: uint8(rand.Intn(256)),
+		G: uint8(rand.Intn(256)),
+		B: uint8(rand.Intn(256)),
+		A: 127,
 	}
 }
 
