@@ -167,10 +167,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		println(fmt.Sprintf("Clicked! %d, %d for cell at coord %d, %d", location.Position.X, location.Position.Y, cellX, cellY))
 
 		// last location
-		last := cellWidget.clickable.History()[0]
+		//last := cellWidget.clickable.History()[0]
 
-		x := unit.Dp(cellX)*cellWidget.cellSize + unit.Dp(last.Position.X)
-		y := unit.Dp(cellY)*cellWidget.cellSize + unit.Dp(last.Position.Y)
+		x := unit.Dp(cellX)*cellWidget.cellSize + gtx.Metric.PxToDp(location.Position.X)
+		y := unit.Dp(cellY)*cellWidget.cellSize + gtx.Metric.PxToDp(location.Position.Y)
 
 		if x < 0 || y < 0 {
 			panic(fmt.Sprintf("Invalid negative click global position: %+v", location.Position))
