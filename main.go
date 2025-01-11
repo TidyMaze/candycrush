@@ -19,6 +19,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"time"
 )
 
 var engine Engine = Engine{}
@@ -79,6 +80,21 @@ func draw(window *app.Window) error {
 	})
 
 	targetLocation := f32.Point{X: 0, Y: 0}
+
+	go func() {
+		for {
+			// add a new ball at random location
+			balls = append(balls, Ball{
+				Location:     f32.Point{X: rand.Float32() * 1000, Y: rand.Float32() * 1000},
+				Velocity:     f32.Point{X: 0, Y: 0},
+				Acceleration: f32.Point{X: 0, Y: 0},
+				color:        randomColor(),
+			})
+
+			// sleep for a while
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
 
 	for {
 		switch e := window.Event().(type) {
