@@ -136,17 +136,32 @@ func draw(window *app.Window) error {
 
 				ball := &balls[iBall]
 
-				ball.Acceleration.X = rand.Float32()*5 + (targetLocation.X-ball.Location.X+ball.Acceleration.X)*0.01
-				ball.Acceleration.Y = rand.Float32()*5 + (targetLocation.Y-ball.Location.Y+ball.Acceleration.Y)*0.01
+				frictionX := float32(0)
+				frictionY := float32(0)
+
+				ball.Acceleration.X = rand.Float32()*5 + (targetLocation.X-ball.Location.X)*0.01
+				ball.Acceleration.Y = rand.Float32()*5 + (targetLocation.Y-ball.Location.Y)*0.01
+
+				if ball.Velocity.X != 0 || ball.Velocity.Y != 0 {
+					velocityMagnitude := float32(math.Sqrt(math.Pow(float64(ball.Velocity.X), 2) + math.Pow(float64(ball.Velocity.Y), 2)))
+					frictionForce := 0.01 * velocityMagnitude
+
+					frictionX = -frictionForce * (ball.Velocity.X / velocityMagnitude)
+					frictionY = -frictionForce * (ball.Velocity.Y / velocityMagnitude)
+
+					ball.Acceleration.X += frictionX
+					ball.Acceleration.Y += frictionY
+				}
 
 				ball.Velocity.X += ball.Acceleration.X
 				ball.Velocity.Y += ball.Acceleration.Y
 
-				ball.Velocity.X *= 0.95
-				ball.Velocity.Y *= 0.95
-
 				ball.Location.X += ball.Velocity.X + 0.5*ball.Acceleration.X
 				ball.Location.Y += ball.Velocity.Y + 0.5*ball.Acceleration.Y
+
+				// reset the acceleration
+				ball.Acceleration.X -= frictionX
+				ball.Acceleration.Y -= frictionY
 
 				// draw a circle at the ball location
 				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, ball.color, 50)
