@@ -130,6 +130,9 @@ func draw(window *app.Window) error {
 			ballLocation.X += ballVelocity.X
 			ballLocation.Y += ballVelocity.Y
 
+			ballVelocity.X *= 0.99
+			ballVelocity.Y *= 0.99
+
 			// draw a circle at the ball location
 			drawCircle(int(ballLocation.X), int(ballLocation.Y), gtx, greenColor, 50)
 
