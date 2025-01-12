@@ -189,7 +189,23 @@ func (e *Engine) ExplodeAndFallUntilStable(gameState State) State {
 				changed = true
 			}
 		}
+
+		// add missing candies
+		newGameState3 := engine.AddMissingCandies(gameState)
+		gameState = newGameState3
 	}
 
 	return gameState
+}
+
+func (e *Engine) AddMissingCandies(state State) State {
+	for j := 0; j < state.Board.Width; j++ {
+		for i := 0; i < state.Board.Height; i++ {
+			if state.Board.Cells[i][j] == Empty {
+				state.Board.Cells[i][j] = e.randomCell()
+			}
+		}
+	}
+
+	return state
 }
