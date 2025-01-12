@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 /**
  * Candy crush engine (implemented only game logic)
@@ -65,6 +68,8 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
+	state = e.ExplodeWhilePossible(state)
+
 	return state
 }
 
@@ -94,7 +99,7 @@ func (e *Engine) explode(state State) State {
 	// Explode rows
 	for i := 0; i < state.Board.Height; i++ {
 		for j := 0; j < state.Board.Width-2; j++ {
-			if state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
+			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
 				state.Board.Cells[i][j] = Empty
 				state.Board.Cells[i][j+1] = Empty
 				state.Board.Cells[i][j+2] = Empty
@@ -106,7 +111,7 @@ func (e *Engine) explode(state State) State {
 	// Explode columns
 	for i := 0; i < state.Board.Height-2; i++ {
 		for j := 0; j < state.Board.Width; j++ {
-			if state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
+			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
 				state.Board.Cells[i][j] = Empty
 				state.Board.Cells[i+1][j] = Empty
 				state.Board.Cells[i+2][j] = Empty
@@ -117,6 +122,21 @@ func (e *Engine) explode(state State) State {
 
 	// Update score
 	state.score += score
+
+	return state
+}
+
+func (e *Engine) ExplodeWhilePossible(state State) State {
+	engine := Engine{}
+
+	for {
+		newState := engine.explode(state)
+		if newState.score == state.score {
+			break
+		}
+		state = newState
+		println(fmt.Sprintf("Score: %d", state.score))
+	}
 
 	return state
 }
