@@ -90,20 +90,55 @@ func (e *Engine) Swap(state State, x1, y1, x2, y2 int) State {
 	return state
 }
 
-/*
- * Explode candies (if there are 3 or more in a row or column)
- */
-func (e *Engine) explode(state State) State {
-	score := 0
+type Coord struct {
+	x int
+	y int
+}
+
+func (e *Engine) findAllTouching(state State, x, y int) []Coord {
+	explored := make([]bool, state.Board.Width*state.Board.Height)
+	touching := make([]Coord, 0)
+
+	q := make([]Coord, 0)
+
+	q = append(q, Coord{x: x, y: y})
+
+	for len(q) > 0 {
+		current := q[0]
+		q = q[1:]
+
+		if current.x < 0 || current.x >= state.Board.Width || current.y < 0 || current.y >= state.Board.Height {
+			continue
+		}
+
+		if explored[current.y*state.Board.Width+current.x] {
+			continue
+		}
+
+		explored[current.y*state.Board.Width+current.x] = true
+
+		if state.Board.Cells[current.y][current.x] == state.Board.Cells[y][x] {
+			touching = append(touching, current)
+			q = append(q, Coord{x: current.x - 1, y: current.y})
+			q = append(q, Coord{x: current.x + 1, y: current.y})
+			q = append(q, Coord{x: current.x, y: current.y - 1})
+			q = append(q, Coord{x: current.x, y: current.y + 1})
+		}
+
+	}
+
+	return touching
+}
+
+func (e *Engine) findAllExploding(state State) []Coord {
+	exploding := make([]Coord, 0)
 
 	// Explode rows
 	for i := 0; i < state.Board.Height; i++ {
 		for j := 0; j < state.Board.Width-2; j++ {
 			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
-				state.Board.Cells[i][j] = Empty
-				state.Board.Cells[i][j+1] = Empty
-				state.Board.Cells[i][j+2] = Empty
-				score += 3
+				// add all the candies that are touching the exploding ones to the list
+				exploding = append(exploding, e.findAllTouching(state, j, i)...)
 			}
 		}
 	}
@@ -112,12 +147,27 @@ func (e *Engine) explode(state State) State {
 	for i := 0; i < state.Board.Height-2; i++ {
 		for j := 0; j < state.Board.Width; j++ {
 			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
-				state.Board.Cells[i][j] = Empty
-				state.Board.Cells[i+1][j] = Empty
-				state.Board.Cells[i+2][j] = Empty
-				score += 3
+				// add all the candies that are touching the exploding ones to the list
+				exploding = append(exploding, e.findAllTouching(state, j, i)...)
 			}
 		}
+	}
+
+	return exploding
+}
+
+/*
+ * Explode candies (if there are 3 or more in a row or column)
+ */
+func (e *Engine) explode(state State) State {
+	score := 0
+
+	exploding := e.findAllExploding(state)
+
+	// Explode candies
+	for _, coord := range exploding {
+		state.Board.Cells[coord.y][coord.x] = Empty
+		score++
 	}
 
 	// Update score
