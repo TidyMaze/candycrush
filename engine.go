@@ -84,3 +84,39 @@ func (e *Engine) Swap(state State, x1, y1, x2, y2 int) State {
 	state.Board.Cells[y1][x1], state.Board.Cells[y2][x2] = state.Board.Cells[y2][x2], state.Board.Cells[y1][x1]
 	return state
 }
+
+/*
+ * Explode candies (if there are 3 or more in a row or column)
+ */
+func (e *Engine) explode(state State) State {
+	score := 0
+
+	// Explode rows
+	for i := 0; i < state.Board.Height; i++ {
+		for j := 0; j < state.Board.Width-2; j++ {
+			if state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
+				state.Board.Cells[i][j] = Empty
+				state.Board.Cells[i][j+1] = Empty
+				state.Board.Cells[i][j+2] = Empty
+				score += 3
+			}
+		}
+	}
+
+	// Explode columns
+	for i := 0; i < state.Board.Height-2; i++ {
+		for j := 0; j < state.Board.Width; j++ {
+			if state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
+				state.Board.Cells[i][j] = Empty
+				state.Board.Cells[i+1][j] = Empty
+				state.Board.Cells[i+2][j] = Empty
+				score += 3
+			}
+		}
+	}
+
+	// Update score
+	state.score += score
+
+	return state
+}
