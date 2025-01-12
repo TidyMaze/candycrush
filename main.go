@@ -127,23 +127,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	}
 
 	// swap the 2 cells in state
-	swapCells(cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
-}
-
-func swapCells(x1, y1, x2, y2 int) {
-	if x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0 {
-		panic(fmt.Sprintf("Invalid negative cell position: %d, %d, %d, %d", x1, y1, x2, y2))
-	}
-
-	if x1 >= gameState.Board.Width || y1 >= gameState.Board.Height || x2 >= gameState.Board.Width || y2 >= gameState.Board.Height {
-		panic(fmt.Sprintf("Invalid cell position: %d, %d, %d, %d", x1, y1, x2, y2))
-	}
-
-	cell1 := gameState.Board.Cells[y1][x1]
-	cell2 := gameState.Board.Cells[y2][x2]
-
-	gameState.Board.Cells[y1][x1] = cell2
-	gameState.Board.Cells[y2][x2] = cell1
+	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 }
 
 func draw(window *app.Window) error {

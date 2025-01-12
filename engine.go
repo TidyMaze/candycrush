@@ -71,3 +71,16 @@ func (e *Engine) InitRandom() State {
 func (e *Engine) randomCell() Cell {
 	return Cell(rand.Intn(6) + 1)
 }
+
+func (e *Engine) Swap(state State, x1, y1, x2, y2 int) State {
+	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Board.Height {
+		return state
+	}
+
+	if x2 < 0 || x2 >= state.Board.Width || y2 < 0 || y2 >= state.Board.Height {
+		return state
+	}
+
+	state.Board.Cells[y1][x1], state.Board.Cells[y2][x2] = state.Board.Cells[y2][x2], state.Board.Cells[y1][x1]
+	return state
+}
