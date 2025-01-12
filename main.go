@@ -81,6 +81,11 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
+	if gameState.Board.Cells[cellY][cellX] == Empty {
+		println("Empty cell, skipping")
+		return
+	}
+
 	// find the main drag direction (up, down, left, right)
 
 	verticalDiff := float64(dragEnd.Y - dragStart.Y)
