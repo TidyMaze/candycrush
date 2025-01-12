@@ -63,14 +63,87 @@ type Ball struct {
 	color        color.NRGBA
 }
 
-func onDragFar(location f32.Point, gtx layout.Context) {
-	println(fmt.Sprintf("Dragged far at %f, %f", location.X, location.Y))
+type Direction int
 
-	// find the cell at the location
-	cellX := int(gtx.Metric.PxToDp(int(location.X)) / cellSizeDp)
-	cellY := int(gtx.Metric.PxToDp(int(location.Y)) / cellSizeDp)
+const (
+	Up Direction = iota
+	Down
+	Left
+	Right
+)
+
+func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
+	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
+
+	// find the cell at the dragStart
+	cellX := int(gtx.Metric.PxToDp(int(dragStart.X)) / cellSizeDp)
+	cellY := int(gtx.Metric.PxToDp(int(dragStart.Y)) / cellSizeDp)
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
+
+	// find the main drag direction (up, down, left, right)
+
+	verticalDiff := float64(dragEnd.Y - dragStart.Y)
+	horizontalDiff := float64(dragEnd.X - dragStart.X)
+
+	dir := Direction(-1)
+
+	if math.Abs(verticalDiff) > math.Abs(horizontalDiff) {
+		// vertical drag
+		if verticalDiff > 0 {
+			println("Down")
+			dir = Down
+		} else {
+			println("Up")
+			dir = Up
+		}
+	} else {
+		// horizontal drag
+		if horizontalDiff > 0 {
+			println("Right")
+			dir = Right
+		} else {
+			println("Left")
+			dir = Left
+		}
+	}
+
+	if dir == -1 {
+		panic("Invalid direction")
+	}
+
+	// convert dir to offset
+	offset := f32.Point{X: 0, Y: 0}
+
+	switch dir {
+	case Up:
+		offset = f32.Point{X: 0, Y: -1}
+	case Down:
+		offset = f32.Point{X: 0, Y: 1}
+	case Left:
+		offset = f32.Point{X: -1, Y: 0}
+	case Right:
+		offset = f32.Point{X: 1, Y: 0}
+	}
+
+	// swap the 2 cells in state
+	swapCells(cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+}
+
+func swapCells(x1, y1, x2, y2 int) {
+	if x1 < 0 || y1 < 0 || x2 < 0 || y2 < 0 {
+		panic(fmt.Sprintf("Invalid negative cell position: %d, %d, %d, %d", x1, y1, x2, y2))
+	}
+
+	if x1 >= gameState.Board.Width || y1 >= gameState.Board.Height || x2 >= gameState.Board.Width || y2 >= gameState.Board.Height {
+		panic(fmt.Sprintf("Invalid cell position: %d, %d, %d, %d", x1, y1, x2, y2))
+	}
+
+	cell1 := gameState.Board.Cells[y1][x1]
+	cell2 := gameState.Board.Cells[y2][x2]
+
+	gameState.Board.Cells[y1][x1] = cell2
+	gameState.Board.Cells[y2][x2] = cell1
 }
 
 func draw(window *app.Window) error {
@@ -89,6 +162,8 @@ func draw(window *app.Window) error {
 		Location: f32.Point{X: 0, Y: 0},
 		Velocity: f32.Point{X: 0, Y: 0},
 	})
+
+	alreadySwapped := false
 
 	go func() {
 		for {
@@ -132,7 +207,7 @@ func draw(window *app.Window) error {
 
 			source := e.Source
 
-			mouseLocation, pressed, dragStart = handleEvents(source, tag, mouseLocation, pressed, dragStart)
+			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
 
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
@@ -153,7 +228,10 @@ func draw(window *app.Window) error {
 					color = slightBlue
 					println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
 
-					onDragFar(dragStart, gtx)
+					if !alreadySwapped {
+						onDragFar(dragStart, mouseLocation, gtx)
+						alreadySwapped = true
+					}
 				}
 
 				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
@@ -180,7 +258,7 @@ func draw(window *app.Window) error {
 	}
 }
 
-func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, pressed bool, dragStart f32.Point) (f32.Point, bool, f32.Point) {
+func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, pressed bool, dragStart f32.Point, alreadySwapped bool) (f32.Point, bool, f32.Point, bool) {
 	for {
 		ev, ok := source.Event(pointer.Filter{
 			Target: tag,
@@ -200,13 +278,14 @@ func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, press
 				dragStart = x.Position
 			case pointer.Release:
 				pressed = false
+				alreadySwapped = false
 				dragStart = f32.Point{X: -1, Y: -1}
 			case pointer.Drag:
 				mouseLocation = x.Position
 			}
 		}
 	}
-	return mouseLocation, pressed, dragStart
+	return mouseLocation, pressed, dragStart, alreadySwapped
 }
 
 func randomColor() color.NRGBA {
