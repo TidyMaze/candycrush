@@ -5,6 +5,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/f32"
 	"gioui.org/io/event"
+	"gioui.org/io/input"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -62,6 +63,16 @@ type Ball struct {
 	color        color.NRGBA
 }
 
+func onDragFar(location f32.Point, gtx layout.Context) {
+	println(fmt.Sprintf("Dragged far at %f, %f", location.X, location.Y))
+
+	// find the cell at the location
+	cellX := int(gtx.Metric.PxToDp(int(location.X)) / cellSizeDp)
+	cellY := int(gtx.Metric.PxToDp(int(location.Y)) / cellSizeDp)
+
+	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
+}
+
 func draw(window *app.Window) error {
 	var ops op.Ops
 
@@ -78,8 +89,6 @@ func draw(window *app.Window) error {
 		Location: f32.Point{X: 0, Y: 0},
 		Velocity: f32.Point{X: 0, Y: 0},
 	})
-
-	targetLocation := f32.Point{X: 0, Y: 0}
 
 	go func() {
 		for {
@@ -123,94 +132,12 @@ func draw(window *app.Window) error {
 
 			source := e.Source
 
-			for {
-				ev, ok := source.Event(pointer.Filter{
-					Target: tag,
-					Kinds:  pointer.Move | pointer.Press | pointer.Release | pointer.Drag,
-				})
-
-				if !ok {
-					break
-				}
-
-				if x, ok := ev.(pointer.Event); ok {
-					switch x.Kind {
-					case pointer.Move:
-						mouseLocation = x.Position
-					case pointer.Press:
-						pressed = true
-						dragStart = x.Position
-					case pointer.Release:
-						pressed = false
-						dragStart = f32.Point{X: -1, Y: -1}
-					case pointer.Drag:
-						mouseLocation = x.Position
-					}
-				}
-			}
+			mouseLocation, pressed, dragStart = handleEvents(source, tag, mouseLocation, pressed, dragStart)
 
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
-			// draw circle at the target location
-			drawCircle(int(targetLocation.X), int(targetLocation.Y), gtx, redColor, 10)
-
-			for iBall, _ := range balls {
-
-				ball := &balls[iBall]
-
-				frictionX := float32(0)
-				frictionY := float32(0)
-
-				ball.Acceleration.X = rand.Float32()*0.1 + (targetLocation.X-ball.Location.X)*0.01
-				ball.Acceleration.Y = rand.Float32()*0.1 + (targetLocation.Y-ball.Location.Y)*0.01
-
-				if ball.Velocity.X != 0 || ball.Velocity.Y != 0 {
-					velocityMagnitude := float32(math.Sqrt(math.Pow(float64(ball.Velocity.X), 2) + math.Pow(float64(ball.Velocity.Y), 2)))
-					frictionForce := 0.04 * velocityMagnitude
-
-					frictionX = -frictionForce * (ball.Velocity.X / velocityMagnitude)
-					frictionY = -frictionForce * (ball.Velocity.Y / velocityMagnitude)
-
-					ball.Acceleration.X += frictionX
-					ball.Acceleration.Y += frictionY
-				}
-
-				// add repulsion from other balls
-				for jBall, _ := range balls {
-					if iBall == jBall {
-						continue
-					}
-
-					otherBall := &balls[jBall]
-
-					distanceX := otherBall.Location.X - ball.Location.X
-					distanceY := otherBall.Location.Y - ball.Location.Y
-
-					distance := float32(math.Sqrt(math.Pow(float64(distanceX), 2) + math.Pow(float64(distanceY), 2)))
-
-					repulsionRadius := float32(100)
-
-					if distance < repulsionRadius {
-						repulsionForce := 0.01 * (repulsionRadius - distance)
-
-						ball.Acceleration.X -= repulsionForce * (distanceX / distance)
-						ball.Acceleration.Y -= repulsionForce * (distanceY / distance)
-					}
-				}
-
-				ball.Velocity.X += ball.Acceleration.X
-				ball.Velocity.Y += ball.Acceleration.Y
-
-				ball.Location.X += ball.Velocity.X + 0.5*ball.Acceleration.X
-				ball.Location.Y += ball.Velocity.Y + 0.5*ball.Acceleration.Y
-
-				// reset the acceleration
-				ball.Acceleration.X -= frictionX
-				ball.Acceleration.Y -= frictionY
-
-				// draw a circle at the ball location
-				drawCircle(int(ball.Location.X), int(ball.Location.Y), gtx, ball.color, 50)
-			}
+			// draw circle at the drag start location
+			drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
 
 			// draw a circle at the mouse location
 			color := redColor
@@ -224,7 +151,9 @@ func draw(window *app.Window) error {
 
 				if distance > 100 {
 					color = slightBlue
-					targetLocation = dragStart
+					println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
+
+					onDragFar(dragStart, gtx)
 				}
 
 				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
@@ -249,6 +178,35 @@ func draw(window *app.Window) error {
 			window.Invalidate()
 		}
 	}
+}
+
+func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, pressed bool, dragStart f32.Point) (f32.Point, bool, f32.Point) {
+	for {
+		ev, ok := source.Event(pointer.Filter{
+			Target: tag,
+			Kinds:  pointer.Move | pointer.Press | pointer.Release | pointer.Drag,
+		})
+
+		if !ok {
+			break
+		}
+
+		if x, ok := ev.(pointer.Event); ok {
+			switch x.Kind {
+			case pointer.Move:
+				mouseLocation = x.Position
+			case pointer.Press:
+				pressed = true
+				dragStart = x.Position
+			case pointer.Release:
+				pressed = false
+				dragStart = f32.Point{X: -1, Y: -1}
+			case pointer.Drag:
+				mouseLocation = x.Position
+			}
+		}
+	}
+	return mouseLocation, pressed, dragStart
 }
 
 func randomColor() color.NRGBA {
