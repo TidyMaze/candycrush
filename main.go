@@ -235,6 +235,9 @@ func draw(window *app.Window) error {
 				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
 			}
 
+			// draw the score with size
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", gameState.score)).Layout(gtx)
+
 			e.Frame(gtx.Ops)
 
 			window.Invalidate()
