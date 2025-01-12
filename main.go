@@ -134,10 +134,10 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// swap the 2 cells in state
 	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
-	gameState = explodedAndFallUntilStable(gameState)
+	gameState = explodeAndFallUntilStable(gameState)
 }
 
-func explodedAndFallUntilStable(gameState State) State {
+func explodeAndFallUntilStable(gameState State) State {
 	changed := true
 
 	for changed {
