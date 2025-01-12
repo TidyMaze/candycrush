@@ -134,8 +134,25 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// swap the 2 cells in state
 	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
-	// explode while possible
-	gameState = engine.ExplodeWhilePossible(gameState)
+	changed := true
+
+	for changed {
+		changed = false
+
+		// explode while possible
+		newGameState, explodedChanged := engine.ExplodeWhilePossible(gameState)
+		gameState = newGameState
+
+		if explodedChanged {
+			changed = true
+			newGameState2, fallChanged := engine.Fall(gameState)
+			gameState = newGameState2
+
+			if fallChanged {
+				changed = true
+			}
+		}
+	}
 }
 
 func draw(window *app.Window) error {

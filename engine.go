@@ -68,7 +68,7 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
-	state = e.ExplodeWhilePossible(state)
+	state, _ = e.ExplodeWhilePossible(state)
 
 	return state
 }
@@ -126,17 +126,46 @@ func (e *Engine) explode(state State) State {
 	return state
 }
 
-func (e *Engine) ExplodeWhilePossible(state State) State {
+func (e *Engine) ExplodeWhilePossible(state State) (State, bool) {
 	engine := Engine{}
+
+	changed := false
 
 	for {
 		newState := engine.explode(state)
 		if newState.score == state.score {
 			break
 		}
+
+		changed = true
 		state = newState
 		println(fmt.Sprintf("Score: %d", state.score))
 	}
 
-	return state
+	return state, changed
+}
+
+/*
+Fall candies: move candies down to fill empty cells
+*/
+func (e *Engine) Fall(state State) (State, bool) {
+
+	changed := false
+
+	for j := 0; j < state.Board.Width; j++ {
+		for i := state.Board.Height - 1; i >= 0; i-- {
+			if state.Board.Cells[i][j] == Empty {
+				for k := i - 1; k >= 0; k-- {
+					if state.Board.Cells[k][j] != Empty {
+						state.Board.Cells[i][j] = state.Board.Cells[k][j]
+						state.Board.Cells[k][j] = Empty
+						changed = true
+						break
+					}
+				}
+			}
+		}
+	}
+
+	return state, changed
 }
