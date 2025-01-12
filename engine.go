@@ -68,7 +68,7 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
-	state, _ = e.ExplodeWhilePossible(state)
+	state = e.ExplodeAndFallUntilStable(state)
 
 	return state
 }
@@ -168,4 +168,28 @@ func (e *Engine) Fall(state State) (State, bool) {
 	}
 
 	return state, changed
+}
+
+func (e *Engine) ExplodeAndFallUntilStable(gameState State) State {
+	changed := true
+
+	for changed {
+		changed = false
+
+		// explode while possible
+		newGameState, explodedChanged := engine.ExplodeWhilePossible(gameState)
+		gameState = newGameState
+
+		if explodedChanged {
+			changed = true
+			newGameState2, fallChanged := engine.Fall(gameState)
+			gameState = newGameState2
+
+			if fallChanged {
+				changed = true
+			}
+		}
+	}
+
+	return gameState
 }
