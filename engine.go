@@ -238,7 +238,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 
 	if changed {
 		go func() {
-			time.Sleep(1 * time.Second)
+			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 			onExplodeFinished(changed)
 		}()
 	} else {
@@ -276,7 +276,7 @@ func onExplodeFinished(explodedChanged bool) {
 	}
 
 	go func() {
-		time.Sleep(1 * time.Second)
+		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		onFallFinished()
 	}()
 }
@@ -288,7 +288,7 @@ func onFallFinished() {
 	gameState = engine.AddMissingCandies(gameState)
 
 	go func() {
-		time.Sleep(1 * time.Second)
+		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		onAddMissingCandiesFinished()
 	}()
 }

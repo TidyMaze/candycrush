@@ -35,6 +35,8 @@ var theme = material.NewTheme()
 var circles []image.Point
 var circlesHovered []image.Point
 
+const ANIMATION_SLEEP_MS = 100
+
 func main() {
 	go func() {
 		window := new(app.Window)
@@ -137,7 +139,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// schedule onSwapFinished for later (1s)
 	go func() {
 		// sleep for 1s
-		time.Sleep(1 * time.Second)
+		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		onSwapFinished()
 	}()
 }
