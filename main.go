@@ -299,10 +299,6 @@ func drawCircles(gtx layout.Context) {
 	for _, circle := range circles {
 		drawCircle(circle.X, circle.Y, gtx, redColor, 50)
 	}
-
-	for _, circle := range circlesHovered {
-		drawCircle(circle.X, circle.Y, gtx, slightDark, 20)
-	}
 }
 
 func drawGrid(gtx layout.Context) {
@@ -342,6 +338,10 @@ func drawCircle(
 
 var clickables []widget.Clickable
 
+func randRange(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
 
 	if cellX < 0 || cellY < 0 {
@@ -380,22 +380,19 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		circles = append(circles, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
 	}
 
-	if cellWidget.clickable.Hovered() {
-		println(fmt.Sprintf("Hovered cell at coord %d, %d", cellX, cellY))
-
-		x := unit.Dp(cellX)*cellWidget.cellSize + cellWidget.cellSize/2
-		y := unit.Dp(cellY)*cellWidget.cellSize + cellWidget.cellSize/2
-
-		circlesHovered = append(circlesHovered, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
+	// random offset base on sin/cos and elapsed time
+	rOffset := image.Point{
+		X: int(unit.Dp(math.Sin(float64(gtx.Now.UnixMilli())*0.01+float64(cellX%2)/2)) * 5),
+		Y: int(unit.Dp(math.Cos(float64(gtx.Now.UnixMilli())*0.01+float64(cellY%2)/2)) * 5),
 	}
 
 	// offset
-	cellGlobalX := cellX * gtx.Dp(cellWidget.cellSize)
-	cellGlobalY := cellY * gtx.Dp(cellWidget.cellSize)
+	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X
+	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y
 
-	if cellGlobalX < 0 || cellGlobalY < 0 {
-		panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
-	}
+	//if cellGlobalX < 0 || cellGlobalY < 0 {
+	//	panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
+	//}
 
 	//print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
 
