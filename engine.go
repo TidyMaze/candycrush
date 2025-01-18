@@ -192,7 +192,7 @@ func (e *Engine) explode(state State) State {
 	return state
 }
 
-func (e *Engine) ExplodeWhilePossible(state State) (State, bool) {
+func (e *Engine) ExplodeAndScore(state State) (State, bool) {
 	engine := Engine{}
 
 	changed := false
@@ -240,7 +240,7 @@ func (e *Engine) ExplodeAndFallUntilStable(gameState State) State {
 		changed = false
 
 		// explode while possible
-		newGameState, explodedChanged := engine.ExplodeWhilePossible(gameState)
+		newGameState, explodedChanged := engine.ExplodeAndScore(gameState)
 		gameState = newGameState
 
 		if explodedChanged {
