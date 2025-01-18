@@ -242,7 +242,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 			onExplodeFinished(changed)
 		}()
 	} else {
-		println("No more explosions")
+		println("Explode and fall until stable finished")
 	}
 }
 
