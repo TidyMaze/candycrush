@@ -342,6 +342,10 @@ func randRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
+func toRad(degrees float32) float32 {
+	return degrees * math.Pi / 180
+}
+
 func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
 
 	if cellX < 0 || cellY < 0 {
@@ -356,30 +360,6 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		clickable: &clickables[cellY*gameState.Board.Width+cellX],
 	}
 
-	// use the clickable widget to detect clicks on a square
-	if cellWidget.clickable.Clicked(gtx) {
-		location := cellWidget.clickable.History()[0]
-
-		if location.Position.X < 0 || location.Position.Y < 0 {
-			panic(fmt.Sprintf("Invalid negative click local position: %+v", location.Position))
-		}
-
-		println(fmt.Sprintf("Clicked! %d, %d for cell at coord %d, %d", location.Position.X, location.Position.Y, cellX, cellY))
-
-		// last location
-		//last := cellWidget.clickable.History()[0]
-
-		x := unit.Dp(cellX)*cellWidget.cellSize + gtx.Metric.PxToDp(location.Position.X)
-		y := unit.Dp(cellY)*cellWidget.cellSize + gtx.Metric.PxToDp(location.Position.Y)
-
-		if x < 0 || y < 0 {
-			panic(fmt.Sprintf("Invalid negative click global position: %+v", location.Position))
-		}
-
-		// add a circle at the clicked position
-		circles = append(circles, image.Point{X: gtx.Dp(x), Y: gtx.Dp(y)})
-	}
-
 	// random offset base on sin/cos and elapsed time
 	rOffset := image.Point{
 		X: int(unit.Dp(math.Sin(float64(gtx.Now.UnixMilli())*0.01+float64(cellX%2)/2)) * 5),
@@ -391,8 +371,8 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y
 
 	// rotate
-	angle := float32(gtx.Now.UnixMilli()) * 0.01
-	rot := f32.Affine2D{}.Rotate(f32.Pt(float32(cellGlobalX), float32(cellGlobalY)), angle)
+	angle := float32((gtx.Now.UnixMilli()/10)%1000) * 360 / 1000
+	println(fmt.Sprintf("Angle: %f", angle))
 
 	//if cellGlobalX < 0 || cellGlobalY < 0 {
 	//	panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
@@ -400,8 +380,14 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 	//print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
 
-	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
+	rotateCenterX := cellGlobalX + int(gtx.Dp(cellSizeDp)/2)
+	rotateCenterY := cellGlobalY + int(gtx.Dp(cellSizeDp)/2)
+
+	stack := op.Affine(f32.Affine2D{}.Rotate(f32.Pt(float32(rotateCenterX), float32(rotateCenterY)), float32(toRad(angle)))).Push(gtx.Ops)
+	stack2 := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
+
 	defer stack.Pop()
+	defer stack2.Pop()
 
 	// draw the square
 	cellWidget.clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
