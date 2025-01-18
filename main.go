@@ -304,7 +304,7 @@ func drawCircles(gtx layout.Context) {
 func drawGrid(gtx layout.Context) {
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], 0.5)
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], 0.9)
 		}
 	}
 }
@@ -369,10 +369,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	}
 
 	// offset
-	emptySize := int(float32(gtx.Dp(cellSizeDp)) * sizePct)
+	emptySize := float32(gtx.Dp(cellSizeDp)) * (1 - sizePct)
 
-	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X + emptySize/2
-	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y + emptySize/2
+	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X + int(emptySize/2)
+	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y + int(emptySize/2)
 
 	// rotate
 	//angle := float32((gtx.Now.UnixMilli()/10)%1000) * 360 / 1000

@@ -197,16 +197,13 @@ func (e *Engine) ExplodeWhilePossible(state State) (State, bool) {
 
 	changed := false
 
-	for {
-		newState := engine.explode(state)
-		if newState.score == state.score {
-			break
-		}
-
+	newState := engine.explode(state)
+	if newState.score != state.score {
 		changed = true
 		state = newState
-		println(fmt.Sprintf("Score: %d", state.score))
 	}
+
+	println(fmt.Sprintf("Score: %d", state.score))
 
 	return state, changed
 }
