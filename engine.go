@@ -258,10 +258,12 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 			// add missing candies
 			gameState = engine.AddMissingCandies(gameState)
 		} else {
-			println("No more explosions")
+			println("No more explosions for this loop")
 			break
 		}
 	}
+
+	println("Explode and fall until stable finished")
 
 	return gameState
 }
