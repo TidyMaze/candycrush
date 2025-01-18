@@ -304,7 +304,7 @@ func drawCircles(gtx layout.Context) {
 func drawGrid(gtx layout.Context) {
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j])
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], 0.5)
 		}
 	}
 }
@@ -346,7 +346,7 @@ func toRad(degrees float32) float32 {
 	return degrees * math.Pi / 180
 }
 
-func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell) {
+func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32) {
 
 	if cellX < 0 || cellY < 0 {
 		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
@@ -398,8 +398,8 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 		return layout.Dimensions{
 			Size: image.Point{
-				X: gtx.Dp(cellSizeDp),
-				Y: gtx.Dp(cellSizeDp),
+				X: int(float32(gtx.Dp(cellSizeDp)) * sizePct),
+				Y: int(float32(gtx.Dp(cellSizeDp)) * sizePct),
 			},
 		}
 	})
