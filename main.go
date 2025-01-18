@@ -20,7 +20,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"time"
 )
 
 var engine Engine = Engine{}
@@ -134,6 +133,10 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// swap the 2 cells in state
 	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
+	onSwapFinished()
+}
+
+func onSwapFinished() {
 	engine.ExplodeAndFallUntilStable(&gameState)
 }
 
@@ -155,28 +158,6 @@ func draw(window *app.Window) error {
 	})
 
 	alreadySwapped := false
-
-	go func() {
-		for {
-			// add a new ball at random location
-			balls = append(balls, Ball{
-				Location:     f32.Point{X: rand.Float32() * 1000, Y: rand.Float32() * 1000},
-				Velocity:     f32.Point{X: 0, Y: 0},
-				Acceleration: f32.Point{X: 0, Y: 0},
-				color:        randomColor(),
-			})
-
-			keepMax := 1000
-
-			if len(balls) > keepMax {
-				// keep the last keepMax balls
-				balls = balls[len(balls)-keepMax:]
-			}
-
-			// sleep for a while
-			time.Sleep(100 * time.Millisecond)
-		}
-	}()
 
 	for {
 		switch e := window.Event().(type) {

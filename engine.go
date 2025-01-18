@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 /**
@@ -244,8 +243,6 @@ func (e *Engine) ExplodeAndFallUntilStable(gameState *State) {
 		newGameState, explodedChanged := engine.ExplodeAndScore(*gameState)
 		gameState = &newGameState
 
-		time.Sleep(1000 * time.Millisecond)
-
 		if explodedChanged {
 			changed = true
 			newGameState2, fallChanged := engine.Fall(*gameState)
@@ -254,8 +251,6 @@ func (e *Engine) ExplodeAndFallUntilStable(gameState *State) {
 			if fallChanged {
 				changed = true
 			}
-
-			time.Sleep(1000 * time.Millisecond)
 		}
 
 		// add missing candies
