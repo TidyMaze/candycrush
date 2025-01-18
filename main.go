@@ -369,8 +369,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	}
 
 	// offset
-	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X
-	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y
+	emptySize := int(float32(gtx.Dp(cellSizeDp)) * sizePct)
+
+	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X + emptySize/2
+	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y + emptySize/2
 
 	// rotate
 	//angle := float32((gtx.Now.UnixMilli()/10)%1000) * 360 / 1000
