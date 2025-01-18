@@ -20,6 +20,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"time"
 )
 
 var engine Engine = Engine{}
@@ -133,7 +134,12 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// swap the 2 cells in state
 	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
-	onSwapFinished()
+	// schedule onSwapFinished for later (1s)
+	go func() {
+		// sleep for 1s
+		time.Sleep(1 * time.Second)
+		onSwapFinished()
+	}()
 }
 
 func onSwapFinished() {
