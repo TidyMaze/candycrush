@@ -35,7 +35,7 @@ var theme = material.NewTheme()
 var circles []image.Point
 var circlesHovered []image.Point
 
-const ANIMATION_SLEEP_MS = 100
+const ANIMATION_SLEEP_MS = 500
 
 func main() {
 	go func() {
