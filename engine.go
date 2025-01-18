@@ -241,6 +241,8 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 			time.Sleep(1 * time.Second)
 			onExplodeFinished(changed)
 		}()
+	} else {
+		println("No more explosions")
 	}
 }
 
