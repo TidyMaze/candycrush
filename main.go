@@ -143,7 +143,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 }
 
 func onSwapFinished() {
-	engine.ExplodeAndFallUntilStable(&gameState)
+	engine.ExplodeAndFallUntilStable()
 }
 
 func draw(window *app.Window) error {

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 /**
@@ -68,7 +69,7 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
-	e.ExplodeAndFallUntilStable(&state)
+	e.ExplodeAndFallUntilStable()
 
 	return state
 }
@@ -211,9 +212,7 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool) {
 /*
 Fall candies: move candies down to fill empty cells
 */
-func (e *Engine) Fall(state State) (State, bool) {
-
-	changed := false
+func (e *Engine) Fall(state State) State {
 
 	for j := 0; j < state.Board.Width; j++ {
 		for i := state.Board.Height - 1; i >= 0; i-- {
@@ -222,7 +221,6 @@ func (e *Engine) Fall(state State) (State, bool) {
 					if state.Board.Cells[k][j] != Empty {
 						state.Board.Cells[i][j] = state.Board.Cells[k][j]
 						state.Board.Cells[k][j] = Empty
-						changed = true
 						break
 					}
 				}
@@ -230,34 +228,52 @@ func (e *Engine) Fall(state State) (State, bool) {
 		}
 	}
 
-	return state, changed
+	return state
 }
 
-func (e *Engine) ExplodeAndFallUntilStable(gameState *State) {
-	changed := true
+func (e *Engine) ExplodeAndFallUntilStable() {
+	// explode while possible
+	newGameState, changed := engine.ExplodeAndScore(gameState)
+	gameState = newGameState
 
-	for changed {
-		changed = false
-
-		// explode while possible
-		newGameState, explodedChanged := engine.ExplodeAndScore(*gameState)
-		gameState = &newGameState
-
-		if explodedChanged {
-			changed = true
-			newGameState2, fallChanged := engine.Fall(*gameState)
-			gameState = &newGameState2
-
-			if fallChanged {
-				changed = true
-			}
-		}
-
-		// add missing candies
-		newGameState3 := engine.AddMissingCandies(*gameState)
-
-		gameState = &newGameState3
+	if changed {
+		go func() {
+			time.Sleep(1 * time.Second)
+			onExplodeFinished(changed)
+		}()
 	}
+}
+
+func onExplodeFinished(explodedChanged bool) {
+	println("Explode finished")
+
+	if explodedChanged {
+		gameState = engine.Fall(gameState)
+	}
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		onFallFinished()
+	}()
+}
+
+func onFallFinished() {
+	println("Fall finished")
+
+	// add missing candies
+	gameState = engine.AddMissingCandies(gameState)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		onAddMissingCandiesFinished()
+	}()
+}
+
+func onAddMissingCandiesFinished() {
+	println("Add missing candies finished")
+
+	// explode while possible
+	engine.ExplodeAndFallUntilStable()
 }
 
 func (e *Engine) AddMissingCandies(state State) State {
