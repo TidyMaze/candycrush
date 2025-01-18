@@ -390,6 +390,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X
 	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y
 
+	// rotate
+	angle := float32(gtx.Now.UnixMilli()) * 0.01
+	rot := f32.Affine2D{}.Rotate(f32.Pt(float32(cellGlobalX), float32(cellGlobalY)), angle)
+
 	//if cellGlobalX < 0 || cellGlobalY < 0 {
 	//	panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
 	//}
