@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 /**
@@ -68,7 +69,7 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
-	state = e.ExplodeAndFallUntilStable(state)
+	e.ExplodeAndFallUntilStable(&state)
 
 	return state
 }
@@ -233,32 +234,35 @@ func (e *Engine) Fall(state State) (State, bool) {
 	return state, changed
 }
 
-func (e *Engine) ExplodeAndFallUntilStable(gameState State) State {
+func (e *Engine) ExplodeAndFallUntilStable(gameState *State) {
 	changed := true
 
 	for changed {
 		changed = false
 
 		// explode while possible
-		newGameState, explodedChanged := engine.ExplodeAndScore(gameState)
-		gameState = newGameState
+		newGameState, explodedChanged := engine.ExplodeAndScore(*gameState)
+		gameState = &newGameState
+
+		time.Sleep(1000 * time.Millisecond)
 
 		if explodedChanged {
 			changed = true
-			newGameState2, fallChanged := engine.Fall(gameState)
-			gameState = newGameState2
+			newGameState2, fallChanged := engine.Fall(*gameState)
+			gameState = &newGameState2
 
 			if fallChanged {
 				changed = true
 			}
+
+			time.Sleep(1000 * time.Millisecond)
 		}
 
 		// add missing candies
-		newGameState3 := engine.AddMissingCandies(gameState)
-		gameState = newGameState3
-	}
+		newGameState3 := engine.AddMissingCandies(*gameState)
 
-	return gameState
+		gameState = &newGameState3
+	}
 }
 
 func (e *Engine) AddMissingCandies(state State) State {
