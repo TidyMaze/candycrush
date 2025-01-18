@@ -69,7 +69,7 @@ func (e *Engine) InitRandom() State {
 		}
 	}
 
-	e.ExplodeAndFallUntilStable()
+	state = e.ExplodeAndFallUntilStableSync(state)
 
 	return state
 }
@@ -244,6 +244,26 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 	} else {
 		println("No more explosions")
 	}
+}
+
+func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
+	// explode while possible
+	for {
+		newGameState, changed := engine.ExplodeAndScore(gameState)
+		gameState = newGameState
+
+		if changed {
+			gameState = engine.Fall(gameState)
+
+			// add missing candies
+			gameState = engine.AddMissingCandies(gameState)
+		} else {
+			println("No more explosions")
+			break
+		}
+	}
+
+	return gameState
 }
 
 func onExplodeFinished(explodedChanged bool) {
