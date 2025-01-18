@@ -383,7 +383,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	rotateCenterX := cellGlobalX + int(gtx.Dp(cellSizeDp)/2)
 	rotateCenterY := cellGlobalY + int(gtx.Dp(cellSizeDp)/2)
 
-	stack := op.Affine(f32.Affine2D{}.Rotate(f32.Pt(float32(rotateCenterX), float32(rotateCenterY)), float32(toRad(angle)))).Push(gtx.Ops)
+	stack := op.Affine(f32.Affine2D{}.Rotate(f32.Pt(float32(rotateCenterX), float32(rotateCenterY)), toRad(angle))).Push(gtx.Ops)
 	stack2 := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
 	defer stack.Pop()
