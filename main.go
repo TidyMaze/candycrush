@@ -315,6 +315,8 @@ func drawGrid(gtx layout.Context) {
 			sizePct := defaultSizePct
 
 			if destroying && destroyed[i][j] {
+				println(fmt.Sprintf("Destroyed cell at %d, %d", i, j))
+
 				sizePct = destroyedSizePct
 				println(fmt.Sprintf("Size pct: %f", sizePct))
 			}
