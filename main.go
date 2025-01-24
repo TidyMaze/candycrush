@@ -177,6 +177,15 @@ func draw(window *app.Window) error {
 
 			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
 
+			// draw the background (same dimensions as the window), either white or black (destroying)
+			backgroundColor := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+
+			if destroying {
+				backgroundColor = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+			}
+
+			drawCell()
+
 			drawGrid(gtx)
 			//drawCircle(0, 0, gtx, redColor, 50)
 
@@ -345,8 +354,6 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 	// random offset base on sin/cos and elapsed time
 	rOffset := image.Point{
-		//X: int(unit.Dp(math.Sin(float64(gtx.Now.UnixMilli())*0.01+float64(cellX%2)/2)) * 5),
-		//Y: int(unit.Dp(math.Cos(float64(gtx.Now.UnixMilli())*0.01+float64(cellY%2)/2)) * 5),
 		X: 0,
 		Y: 0,
 	}
@@ -357,24 +364,10 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X + int(emptySize/2)
 	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y + int(emptySize/2)
 
-	// rotate
-	//angle := float32((gtx.Now.UnixMilli()/10)%1000) * 360 / 1000
-	//println(fmt.Sprintf("Angle: %f", angle))
-
-	//if cellGlobalX < 0 || cellGlobalY < 0 {
-	//	panic(fmt.Sprintf("Invalid negative global cell position: %d, %d", cellGlobalX, cellGlobalY))
-	//}
-
-	//print(fmt.Sprintf("Drawing cell at %d, %d\n", cellGlobalX, cellGlobalY))
-
-	//rotateCenterX := cellGlobalX + int(gtx.Dp(cellSizeDp)/2)
-	//rotateCenterY := cellGlobalY + int(gtx.Dp(cellSizeDp)/2)
-
-	//stack := op.Affine(f32.Affine2D{}.Rotate(f32.Pt(float32(rotateCenterX), float32(rotateCenterY)), toRad(angle))).Push(gtx.Ops)
-	stack2 := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
+	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
 	//defer stack.Pop()
-	defer stack2.Pop()
+	defer stack.Pop()
 
 	// draw the square
 	cellWidget.clickable.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
