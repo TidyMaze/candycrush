@@ -184,7 +184,7 @@ func draw(window *app.Window) error {
 				backgroundColor = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
 			}
 
-			drawCell()
+			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
 
 			drawGrid(gtx)
 			//drawCircle(0, 0, gtx, redColor, 50)
@@ -380,6 +380,24 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 			},
 		}
 	})
+}
+
+func drawRect(gtx layout.Context, x, y, width, height int, color color.NRGBA) {
+	if width < 0 || height < 0 {
+		panic("Invalid negative width or height")
+	}
+
+	if width == 0 || height == 0 {
+		return
+	}
+
+	// offset
+	stack := op.Offset(image.Point{X: x, Y: y}).Push(gtx.Ops)
+
+	defer stack.Pop()
+
+	// draw the rect
+	paint.Fill(gtx.Ops, color)
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}

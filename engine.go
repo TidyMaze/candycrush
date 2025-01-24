@@ -246,6 +246,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 		}()
 	} else {
 		println("Explode and fall until stable finished")
+		destroying = false
 	}
 }
 
