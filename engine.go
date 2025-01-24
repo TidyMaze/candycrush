@@ -232,6 +232,8 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 	if changed {
 		destroying = true
 		destroyingSince = time.Now()
+		println(fmt.Sprintf("Setting destroying to true, destroyingSince: %s", destroyingSince))
+
 		destroyed = exploded
 
 		go func() {
