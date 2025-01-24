@@ -366,7 +366,6 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
-	//defer stack.Pop()
 	defer stack.Pop()
 
 	// draw the square
