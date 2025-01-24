@@ -189,6 +189,7 @@ func draw(window *app.Window) error {
 			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
 
 			drawGrid(gtx)
+
 			//drawCircle(0, 0, gtx, redColor, 50)
 
 			// print the mouse position
