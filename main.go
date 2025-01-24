@@ -310,7 +310,8 @@ func drawGrid(gtx layout.Context) {
 
 			if destroying && destroyed[i][j] {
 				// linear interpolation
-				sizePct = lerpRange(100, 0, 0, 1, float64(time.Since(destroyingSince).Milliseconds())/ANIMATION_SLEEP_MS)
+				sizePct = lerpRange(100, 0, 0, ANIMATION_SLEEP_MS, float64(time.Since(destroyingSince).Milliseconds())) / 100
+				println(fmt.Sprintf("Size pct: %f", sizePct))
 			}
 
 			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct))
