@@ -142,12 +142,9 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 	for i := 0; i < state.Board.Height; i++ {
 		for j := 0; j < state.Board.Width-2; j++ {
 			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
-				// add all the candies that are touching the exploding ones to the list
-				touching := e.findAllTouching(state, j, i)
-
-				for _, coord := range touching {
-					exploding[coord.y][coord.x] = true
-				}
+				exploding[i][j] = true
+				exploding[i][j+1] = true
+				exploding[i][j+2] = true
 			}
 		}
 	}
@@ -156,12 +153,9 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 	for i := 0; i < state.Board.Height-2; i++ {
 		for j := 0; j < state.Board.Width; j++ {
 			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
-				// add all the candies that are touching the exploding ones to the list
-				touching := e.findAllTouching(state, j, i)
-
-				for _, coord := range touching {
-					exploding[coord.y][coord.x] = true
-				}
+				exploding[i][j] = true
+				exploding[i+1][j] = true
+				exploding[i+2][j] = true
 			}
 		}
 	}
@@ -172,7 +166,7 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 /*
  * Explode candies (if there are 3 or more in a row or column)
  */
-func (e *Engine) explode(state State) State {
+func (e *Engine) explode(state State) (State, [][]bool) {
 	score := 0
 
 	exploding := e.findAllExploding(state)
@@ -190,15 +184,15 @@ func (e *Engine) explode(state State) State {
 	// Update score
 	state.score += score
 
-	return state
+	return state, exploding
 }
 
-func (e *Engine) ExplodeAndScore(state State) (State, bool) {
+func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
 	engine := Engine{}
 
 	changed := false
 
-	newState := engine.explode(state)
+	newState, exploded := engine.explode(state)
 	if newState.score != state.score {
 		changed = true
 		state = newState
@@ -206,7 +200,7 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool) {
 
 	println(fmt.Sprintf("Score: %d", state.score))
 
-	return state, changed
+	return state, changed, exploded
 }
 
 /*
@@ -233,13 +227,14 @@ func (e *Engine) Fall(state State) State {
 
 func (e *Engine) ExplodeAndFallUntilStable() {
 	// explode while possible
-	newGameState, changed := engine.ExplodeAndScore(gameState)
+	newGameState, changed, exploded := engine.ExplodeAndScore(gameState)
 
 	if changed {
 		destroying = true
+		destroyingSince = time.Now()
+		destroyed = exploded
 
 		go func() {
-
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 			gameState = newGameState
 			onExplodeFinished(changed)
@@ -253,7 +248,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 	// explode while possible
 	for {
-		newGameState, changed := engine.ExplodeAndScore(gameState)
+		newGameState, changed, _ := engine.ExplodeAndScore(gameState)
 		gameState = newGameState
 
 		if changed {

@@ -37,6 +37,8 @@ var circlesHovered []image.Point
 const ANIMATION_SLEEP_MS = 500
 
 var destroying = false
+var destroyingSince = time.Now()
+var destroyed [][]bool = nil
 
 func main() {
 	go func() {
