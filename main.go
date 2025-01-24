@@ -37,6 +37,8 @@ var circlesHovered []image.Point
 
 const ANIMATION_SLEEP_MS = 500
 
+var destroying = false
+
 func main() {
 	go func() {
 		window := new(app.Window)
@@ -192,7 +194,9 @@ func draw(window *app.Window) error {
 			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
 
 			// draw circle at the drag start location
-			drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
+			if dragStart.X != -1 && dragStart.Y != -1 {
+				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
+			}
 
 			// draw a circle at the mouse location
 			color := redColor

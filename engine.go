@@ -234,11 +234,14 @@ func (e *Engine) Fall(state State) State {
 func (e *Engine) ExplodeAndFallUntilStable() {
 	// explode while possible
 	newGameState, changed := engine.ExplodeAndScore(gameState)
-	gameState = newGameState
 
 	if changed {
+		destroying = true
+
 		go func() {
+
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			gameState = newGameState
 			onExplodeFinished(changed)
 		}()
 	} else {
@@ -270,6 +273,8 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 
 func onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
+
+	destroying = false
 
 	if explodedChanged {
 		gameState = engine.Fall(gameState)
