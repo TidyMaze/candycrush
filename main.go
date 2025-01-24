@@ -305,13 +305,17 @@ func lerpRange(a, b, from, to, p float64) float64 {
 }
 
 func drawGrid(gtx layout.Context) {
+	defaultSizePct := 0.95
+
+	// linear interpolation
+	destroyedSizePct := math.Max(0, lerpRange(100, 0, 0, float64(ANIMATION_SLEEP_MS)/2, float64(time.Since(destroyingSince).Milliseconds()))/100)
+
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
-			sizePct := 0.95
+			sizePct := defaultSizePct
 
 			if destroying && destroyed[i][j] {
-				// linear interpolation
-				sizePct = lerpRange(100, 0, 0, ANIMATION_SLEEP_MS, float64(time.Since(destroyingSince).Milliseconds())) / 100
+				sizePct = destroyedSizePct
 				println(fmt.Sprintf("Size pct: %f", sizePct))
 			}
 
