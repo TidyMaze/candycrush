@@ -32,7 +32,6 @@ const textSize = unit.Sp(24)
 
 var theme = material.NewTheme()
 
-var circles []image.Point
 var circlesHovered []image.Point
 
 const ANIMATION_SLEEP_MS = 500
@@ -181,10 +180,7 @@ func draw(window *app.Window) error {
 			drawGrid(gtx)
 			//drawCircle(0, 0, gtx, redColor, 50)
 
-			drawCircles(gtx)
-
 			// print the mouse position
-
 			event.Op(&ops, tag)
 
 			source := e.Source
@@ -286,12 +282,6 @@ func randomColor() color.NRGBA {
 
 func distance(a, b f32.Point) float64 {
 	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
-}
-
-func drawCircles(gtx layout.Context) {
-	for _, circle := range circles {
-		drawCircle(circle.X, circle.Y, gtx, redColor, 50)
-	}
 }
 
 func drawGrid(gtx layout.Context) {
