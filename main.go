@@ -295,10 +295,25 @@ func distance(a, b f32.Point) float64 {
 	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
 }
 
+func lerp(a, b, pct float64) float64 {
+	return a + pct*(b-a)
+}
+
+func lerpRange(a, b, from, to, p float64) float64 {
+	return lerp(a, b, (p-from)/(to-from))
+}
+
 func drawGrid(gtx layout.Context) {
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], 0.9)
+			sizePct := 0.95
+
+			if destroying && destroyed[i][j] {
+				// linear interpolation
+				sizePct = lerpRange(100, 0, 0, 1, float64(time.Since(destroyingSince).Milliseconds())/ANIMATION_SLEEP_MS)
+			}
+
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct))
 		}
 	}
 }
