@@ -308,7 +308,8 @@ func drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
 
 	// linear interpolation
-	destroyedSizePct := math.Max(0, lerpRange(1, 0, 0, float64(ANIMATION_SLEEP_MS)/2, float64(time.Since(destroyingSince).Milliseconds())))
+	destroyedSizePct := lerpRange(1, 0, 0, float64(ANIMATION_SLEEP_MS)/2, float64(time.Since(destroyingSince).Milliseconds()))
+	destroyedSizePct := math.Max(0, destroyedSizePct)
 
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
