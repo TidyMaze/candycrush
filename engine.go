@@ -89,21 +89,21 @@ func (e *Engine) Init() State {
 
 func (e *Engine) InitRandom() {
 
-	state := e.Init()
+	e.state = e.Init()
 
-	for i := 0; i < state.Board.Height; i++ {
-		for j := 0; j < state.Board.Width; j++ {
-			state.Board.Cells[i][j] = e.randomCell()
+	for i := 0; i < e.state.Board.Height; i++ {
+		for j := 0; j < e.state.Board.Width; j++ {
+			e.state.Board.Cells[i][j] = e.randomCell()
 		}
 	}
 
-	if state.Board.Width <= 0 || state.Board.Height <= 0 {
+	if e.state.Board.Width <= 0 || e.state.Board.Height <= 0 {
 		panic("Invalid board size")
 	}
 
 	e.ExplodeAndFallUntilStableSync()
 
-	state.score = 0
+	e.state.score = 0
 }
 
 func (e *Engine) randomCell() Cell {
