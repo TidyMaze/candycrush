@@ -335,11 +335,14 @@ func lerp(a, b, pct float64) float64 {
 	return a + pct*(b-a)
 }
 
-func lerpRange(a, b, from, to, p float64) float64 {
-	minDest := math.Min(a, b)
-	maxDest := math.Max(a, b)
+func lerpRange(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inputRangePosition float64) float64 {
+	minDest := math.Min(outputRangeStart, outputRangeEnd)
+	maxDest := math.Max(outputRangeStart, outputRangeEnd)
 
-	return math.Max(minDest, math.Min(maxDest, lerp(a, b, (p-from)/(to-from))))
+	pct := (inputRangePosition - inputRangeStart) / (inputRangeEnd - inputRangeStart)
+	rescaled := lerp(outputRangeStart, outputRangeEnd, pct)
+
+	return math.Max(minDest, math.Min(maxDest, rescaled))
 }
 
 func drawGrid(gtx layout.Context) {
