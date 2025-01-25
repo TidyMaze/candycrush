@@ -104,6 +104,7 @@ type UI struct {
 	engine             Engine
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
+	clickables         []widget.Clickable
 }
 
 type Ball struct {
@@ -475,8 +476,6 @@ func drawCircle(
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
 }
 
-var clickables []widget.Clickable
-
 func randRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
@@ -496,7 +495,7 @@ func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY in
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: &clickables[cellY*ui.engine.state.Board.Width+cellX],
+		clickable: &ui.clickables[cellY*ui.engine.state.Board.Width+cellX],
 	}
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
@@ -606,7 +605,7 @@ func runUI() {
 		))
 
 		// create clickables
-		clickables = make([]widget.Clickable, ui.engine.state.Board.Width*ui.engine.state.Board.Height)
+		ui.clickables = make([]widget.Clickable, ui.engine.state.Board.Width*ui.engine.state.Board.Height)
 
 		err := ui.run(window)
 		if err != nil {
