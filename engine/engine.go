@@ -57,7 +57,7 @@ func (e *Engine) InitRandom() {
 
 	for i := 0; i < e.State.Board.Height; i++ {
 		for j := 0; j < e.State.Board.Width; j++ {
-			e.State.Board.Cells[i][j] = e.randomCell()
+			e.setCell(j, i, e.randomCell())
 		}
 	}
 
@@ -68,6 +68,14 @@ func (e *Engine) InitRandom() {
 	e.ExplodeAndFallUntilStableSync()
 
 	e.State.Score = 0
+}
+
+func (e *Engine) setCell(x, y int, cell Cell) {
+	e.State.SetCell(x, y, cell)
+}
+
+func (e *Engine) getCell(x, y int) Cell {
+	return e.State.GetCell(x, y)
 }
 
 func (e *Engine) randomCell() Cell {
@@ -90,7 +98,7 @@ func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
 }
 
 func (e *Engine) findAllTouching(state State, x, y int) []Coord {
-	explored := make([]bool, state.Board.Width*state.Board.Height)
+	explored := make([]bool, state.Width()*state.Height())
 	touching := make([]Coord, 0)
 
 	q := make([]Coord, 0)
@@ -101,17 +109,17 @@ func (e *Engine) findAllTouching(state State, x, y int) []Coord {
 		current := q[0]
 		q = q[1:]
 
-		if current.x < 0 || current.x >= state.Board.Width || current.y < 0 || current.y >= state.Board.Height {
+		if current.x < 0 || current.x >= state.Width() || current.y < 0 || current.y >= state.Height() {
 			continue
 		}
 
-		if explored[current.y*state.Board.Width+current.x] {
+		if explored[current.y*state.Width()+current.x] {
 			continue
 		}
 
 		explored[current.y*state.Board.Width+current.x] = true
 
-		if state.Board.Cells[current.y][current.x] == state.Board.Cells[y][x] {
+		if state.GetCell(current.x, current.y) == state.GetCell(x, y) {
 			touching = append(touching, current)
 			q = append(q, Coord{x: current.x - 1, y: current.y})
 			q = append(q, Coord{x: current.x + 1, y: current.y})

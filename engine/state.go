@@ -5,6 +5,14 @@ type State struct {
 	Score int
 }
 
+func (s *State) SetCell(x, y int, cell Cell) {
+	s.Board.SetCell(x, y, cell)
+}
+
+func (s *State) GetCell(x, y int) Cell {
+	return s.Board.GetCell(x, y)
+}
+
 func (s *State) Width() int {
 	return s.Board.Width
 }
