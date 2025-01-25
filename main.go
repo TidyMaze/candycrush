@@ -331,16 +331,12 @@ func distance(a, b f32.Point) float64 {
 	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
 }
 
-func lerp(a, b, pct float64) float64 {
-	return a + pct*(b-a)
-}
-
 func lerpRange(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inputRangePosition float64) float64 {
 	minDest := math.Min(outputRangeStart, outputRangeEnd)
 	maxDest := math.Max(outputRangeStart, outputRangeEnd)
 
 	pct := (inputRangePosition - inputRangeStart) / (inputRangeEnd - inputRangeStart)
-	rescaled := lerp(outputRangeStart, outputRangeEnd, pct)
+	rescaled := outputRangeStart + pct*(outputRangeEnd-outputRangeStart)
 
 	return math.Max(minDest, math.Min(maxDest, rescaled))
 }
