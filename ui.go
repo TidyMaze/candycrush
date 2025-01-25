@@ -25,9 +25,7 @@ import (
 
 func buildUI() UI {
 
-	engine := Engine{
-		handleChangedAfterExplode: nil,
-	}
+	engine := Engine{}
 
 	state := engine.InitRandom()
 
