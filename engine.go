@@ -267,6 +267,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 		}()
 	} else {
 		println("Explode and fall until stable finished")
+		animationStep = Idle
 	}
 }
 
@@ -298,12 +299,14 @@ func onExplodeFinished(explodedChanged bool) {
 
 	if explodedChanged {
 		gameState = engine.Fall(gameState)
-	}
 
-	go func() {
-		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-		onFallFinished()
-	}()
+		go func() {
+			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			onFallFinished()
+		}()
+	} else {
+		animationStep = Idle
+	}
 }
 
 func onFallFinished() {
