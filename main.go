@@ -148,13 +148,13 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	animationStep = Swap
 
+	// swap the 2 cells in state
+	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+
 	// schedule onSwapFinished for later (1s)
 	go func() {
 		// sleep for 1s
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-
-		// swap the 2 cells in state
-		gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
 		onSwapFinished()
 	}()
