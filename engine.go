@@ -87,7 +87,7 @@ func (e *Engine) Init() State {
 	}
 }
 
-func (e *Engine) InitRandom() State {
+func (e *Engine) InitRandom() {
 
 	state := e.Init()
 
@@ -100,8 +100,6 @@ func (e *Engine) InitRandom() State {
 	state = e.ExplodeAndFallUntilStableSync(state)
 
 	state.score = 0
-
-	return state
 }
 
 func (e *Engine) randomCell() Cell {

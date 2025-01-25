@@ -27,9 +27,7 @@ func buildUI() UI {
 
 	engine := Engine{}
 
-	state := engine.InitRandom()
-
-	engine.state = state
+	engine.InitRandom()
 
 	ui := UI{
 		animationStep:  Idle,
@@ -620,6 +618,10 @@ func showAnimationStep(step AnimationStep) string {
 
 func runUI() {
 	ui := buildUI()
+
+	if ui.engine.state.Board.Width <= 0 || ui.engine.state.Board.Height <= 0 {
+		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.state.Board.Width, ui.engine.state.Board.Height))
+	}
 
 	go func() {
 		window := new(app.Window)
