@@ -54,7 +54,14 @@ func (s *State) clone() State {
 	}
 }
 
-type Engine struct{}
+type Engine struct {
+	state                         State
+	handleChangedAfterExplode     func(changed bool, exploded [][]bool)
+	handleExplodeFinished         func(fallen [][]bool)
+	handleExplodeFinishedNoChange func()
+	handleFallFinished            func(newFilled [][]bool)
+	handleAddMissingCandies       func()
+}
 
 func (e *Engine) Init() State {
 
@@ -260,44 +267,36 @@ func (e *Engine) Fall(state State) (State, [][]bool) {
 
 func (e *Engine) ExplodeAndFallUntilStable() {
 	// explode while possible
-	newGameState, changed, exploded := globalEngine.ExplodeAndScore(globalState)
+	newGameState, changed, exploded := e.ExplodeAndScore(e.state)
+
+	if e.handleChangedAfterExplode != nil {
+		e.handleChangedAfterExplode(changed, exploded)
+	}
 
 	if changed {
-		animationStep = Explode
-		animationSince = time.Now()
-		println(fmt.Sprintf("Setting destroying to true, animationSince: %s", animationSince))
-
-		globalDestroyed = exploded
-
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-			globalState = newGameState
-			onExplodeFinished(changed)
+			e.state = newGameState
+			e.onExplodeFinished(changed)
 		}()
-	} else {
-		println("Explode and fall until stable finished")
-		animationStep = Idle
 	}
 }
 
 func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 	// explode while possible
 	for {
-		newGameState, changed, _ := globalEngine.ExplodeAndScore(gameState)
+		newGameState, changed, _ := e.ExplodeAndScore(gameState)
 		gameState = newGameState
 
 		if changed {
-			animationStep = Fall
-			newGameState, _ := globalEngine.Fall(gameState)
+			newGameState, _ := e.Fall(gameState)
 			gameState = newGameState
 
 			// add missing candies
-			newGameState2, newFilled := globalEngine.AddMissingCandies(gameState)
+			newGameState2, _ := e.AddMissingCandies(gameState)
 			gameState = newGameState2
-			globalFilled = newFilled
 		} else {
 			println("No more explosions for this loop")
-			animationStep = Idle
 			break
 		}
 	}
@@ -307,56 +306,59 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 	return gameState
 }
 
-func onExplodeFinished(explodedChanged bool) {
+func (e *Engine) onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
 	if explodedChanged {
-		newGameState, fallen := globalEngine.Fall(globalState)
+		newGameState, fallen := e.Fall(e.state)
 
-		animationStep = Fall
-		animationSince = time.Now()
+		if e.handleExplodeFinished != nil {
+			e.handleExplodeFinished(fallen)
+		}
 
 		go func() {
-			globalState = newGameState
-			globalFallen = fallen
+			e.state = newGameState
 
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-			onFallFinished()
+			e.onFallFinished()
 		}()
 	} else {
-		animationStep = Idle
+		e.handleExplodeFinishedNoChange()
 	}
 }
 
-func onFallFinished() {
+func (e *Engine) onFallFinished() {
 	println("Fall finished")
 
 	// add missing candies
-	newGameState, newFilled := globalEngine.AddMissingCandies(globalState)
+	newGameState, newFilled := e.AddMissingCandies(e.state)
 
-	globalState = newGameState
-	globalFilled = newFilled
+	e.state = newGameState
+
+	if e.handleFallFinished != nil {
+		e.handleFallFinished(newFilled)
+	}
 
 	go func() {
-		animationSince = time.Now()
-
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-		onAddMissingCandiesFinished()
+		e.onAddMissingCandiesFinished()
 	}()
 }
 
-func onAddMissingCandiesFinished() {
+func (e *Engine) onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
 
 	go func() {
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		// explode while possible
-		globalEngine.ExplodeAndFallUntilStable()
+		e.ExplodeAndFallUntilStable()
 	}()
 }
 
 func (e *Engine) AddMissingCandies(state State) (State, [][]bool) {
-	animationStep = Refill
+	if e.handleAddMissingCandies != nil {
+		e.handleAddMissingCandies()
+	}
 
 	newState := state.clone()
 

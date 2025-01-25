@@ -23,8 +23,60 @@ import (
 	"time"
 )
 
-var globalEngine Engine = Engine{}
-var globalState State = globalEngine.InitRandom()
+func buildUI() UI {
+
+	engine := Engine{
+		handleChangedAfterExplode: nil,
+	}
+
+	state := engine.InitRandom()
+
+	engine.state = state
+
+	ui := UI{
+		animationStep:   Idle,
+		animationSince:  time.Now(),
+		globalDestroyed: nil,
+		globalFilled:    nil,
+		globalFallen:    nil,
+		engine:          engine,
+	}
+
+	engine.handleChangedAfterExplode = func(changed bool, exploded [][]bool) {
+		if changed {
+			ui.animationStep = Explode
+			ui.animationSince = time.Now()
+
+			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
+
+			ui.globalDestroyed = exploded
+		} else {
+			println("Explode and fall until stable finished")
+			ui.animationStep = Idle
+		}
+	}
+
+	engine.handleExplodeFinished = func(fallen [][]bool) {
+		ui.animationStep = Fall
+		ui.animationSince = time.Now()
+		ui.globalFallen = fallen
+	}
+
+	engine.handleExplodeFinishedNoChange = func() {
+		ui.animationStep = Idle
+	}
+
+	engine.handleFallFinished = func(newFilled [][]bool) {
+		ui.globalFilled = newFilled
+		ui.animationSince = time.Now()
+	}
+
+	engine.handleAddMissingCandies = func() {
+		ui.animationStep = Refill
+	}
+
+	return ui
+}
 
 // ui constants
 const cellSizeDp = unit.Dp(75)
@@ -42,11 +94,14 @@ const (
 	Refill
 )
 
-var animationStep = Idle
-var animationSince = time.Now()
-var globalDestroyed [][]bool = nil
-var globalFilled [][]bool = nil
-var globalFallen [][]bool = nil
+type UI struct {
+	animationStep   AnimationStep
+	animationSince  time.Time
+	globalDestroyed [][]bool
+	globalFilled    [][]bool
+	globalFallen    [][]bool
+	engine          Engine
+}
 
 const UseStateAsBackgroundColor = false
 
@@ -66,7 +121,7 @@ const (
 	Right
 )
 
-func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
+func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
 
 	// find the cell at the dragStart
@@ -75,7 +130,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	if globalState.Board.Cells[cellY][cellX] == Empty {
+	if ui.engine.state.Board.Cells[cellY][cellX] == Empty {
 		println("Empty cell, skipping")
 		return
 	}
@@ -125,29 +180,29 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		offset = f32.Point{X: 1, Y: 0}
 	}
 
-	animationStep = Swap
+	ui.animationStep = Swap
 
 	// swap the 2 cells in state
-	globalState = globalEngine.Swap(globalState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+	ui.engine.state = ui.engine.Swap(ui.engine.state, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
 		// sleep for 1s
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 
-		onSwapFinished()
+		ui.onSwapFinished()
 	}()
 }
 
-func onSwapFinished() {
+func (ui *UI) onSwapFinished() {
 	println("Swap finished")
-	globalEngine.ExplodeAndFallUntilStable()
+	ui.engine.ExplodeAndFallUntilStable()
 }
 
 var lastFramesDuration []time.Duration = make([]time.Duration, 0)
 var lastFrameTime = time.Now()
 
-func draw(window *app.Window) error {
+func (ui *UI) draw(window *app.Window) error {
 	var ops op.Ops
 
 	tag := new(bool)
@@ -176,11 +231,11 @@ func draw(window *app.Window) error {
 			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
 
 			// draw the background (same dimensions as the window), either white or black (destroying)
-			backgroundColor := getBackgroundColor()
+			backgroundColor := ui.getBackgroundColor()
 
 			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
 
-			drawGrid(gtx)
+			ui.drawGrid(gtx)
 
 			//drawCircle(0, 0, gtx, redColor, 50)
 
@@ -213,7 +268,7 @@ func draw(window *app.Window) error {
 					println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
 
 					if !alreadySwapped {
-						onDragFar(dragStart, mouseLocation, gtx)
+						ui.onDragFar(dragStart, mouseLocation, gtx)
 						alreadySwapped = true
 					}
 				}
@@ -236,7 +291,7 @@ func draw(window *app.Window) error {
 			}
 
 			// draw the score with size
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", globalState.score)).Layout(gtx)
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.engine.state.score)).Layout(gtx)
 
 			// draw FPS counter
 			fps := computeFPS(lastFramesDuration)
@@ -285,12 +340,12 @@ func computeFPS(lastFramesDuration []time.Duration) int {
 	return int(time.Second / avg)
 }
 
-func getBackgroundColor() color.NRGBA {
+func (ui *UI) getBackgroundColor() color.NRGBA {
 	if !UseStateAsBackgroundColor {
 		return ccBackgroundColor
 	}
 
-	switch animationStep {
+	switch ui.animationStep {
 	case Idle:
 		return ccBackgroundColor
 	case Explode:
@@ -302,7 +357,7 @@ func getBackgroundColor() color.NRGBA {
 	case Refill:
 		return darkPurpleColor
 	default:
-		panic(fmt.Sprintf("Invalid animation step: %d", animationStep))
+		panic(fmt.Sprintf("Invalid animation step: %d", ui.animationStep))
 	}
 }
 
@@ -359,37 +414,37 @@ func lerp(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inpu
 	return math.Max(minDest, math.Min(maxDest, rescaled))
 }
 
-func drawGrid(gtx layout.Context) {
+func (ui *UI) drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
 
 	//destroyedSizePct := 0.5
 
-	for i := 0; i < globalState.Board.Height; i++ {
-		for j := 0; j < globalState.Board.Width; j++ {
+	for i := 0; i < ui.engine.state.Board.Height; i++ {
+		for j := 0; j < ui.engine.state.Board.Width; j++ {
 			sizePct := defaultSizePct
 
-			switch animationStep {
+			switch ui.animationStep {
 			case Explode:
-				if globalDestroyed != nil && globalDestroyed[i][j] {
+				if ui.globalDestroyed != nil && ui.globalDestroyed[i][j] {
 					// linear interpolation
-					sizePct = lerp(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+					sizePct = lerp(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
-				if globalFilled != nil && globalFilled[i][j] {
-					sizePct = lerp(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+				if ui.globalFilled != nil && ui.globalFilled[i][j] {
+					sizePct = lerp(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 
 			fallPct := float64(1)
 
-			if animationStep == Fall {
-				if globalFallen != nil && globalFallen[i][j] {
-					fallPct = lerp(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+			if ui.animationStep == Fall {
+				if ui.globalFallen != nil && ui.globalFallen[i][j] {
+					fallPct = lerp(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 
-			drawCell(cellSizeDp, gtx, j, i, globalState.Board.Cells[i][j], float32(sizePct), fallPct)
+			ui.drawCell(cellSizeDp, gtx, j, i, ui.engine.state.Board.Cells[i][j], float32(sizePct), fallPct)
 		}
 	}
 	//print(".")
@@ -432,7 +487,7 @@ func toRad(degrees float32) float32 {
 	return degrees * math.Pi / 180
 }
 
-func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32, fallPct float64) {
+func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32, fallPct float64) {
 
 	if cellX < 0 || cellY < 0 {
 		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
@@ -443,7 +498,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: &clickables[cellY*globalState.Board.Width+cellX],
+		clickable: &clickables[cellY*ui.engine.state.Board.Width+cellX],
 	}
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
@@ -534,26 +589,28 @@ func getColor(cell Cell) color.NRGBA {
 
 }
 
-func run(window *app.Window) error {
+func (ui *UI) run(window *app.Window) error {
 
-	draw(window)
+	ui.draw(window)
 
 	return nil
 }
 
 func runUI() {
+	ui := buildUI()
+
 	go func() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(globalState.Board.Width)*cellSizeDp,
-			unit.Dp(globalState.Board.Height)*cellSizeDp,
+			unit.Dp(ui.engine.state.Board.Width)*cellSizeDp,
+			unit.Dp(ui.engine.state.Board.Height)*cellSizeDp,
 		))
 
 		// create clickables
-		clickables = make([]widget.Clickable, globalState.Board.Width*globalState.Board.Height)
+		clickables = make([]widget.Clickable, ui.engine.state.Board.Width*ui.engine.state.Board.Height)
 
-		err := run(window)
+		err := ui.run(window)
 		if err != nil {
 			log.Fatal(err)
 		}
