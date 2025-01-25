@@ -593,6 +593,10 @@ func getColor(cell engine.Cell) color.NRGBA {
 
 func (ui *UI) run(window *app.Window) error {
 
+	if ui.engine.Delay == nil {
+		panic("Delay is nil")
+	}
+
 	ui.draw(window)
 
 	return nil
