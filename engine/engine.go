@@ -275,7 +275,9 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 
 	if changed {
 		go func() {
-			e.Delay()
+			if e.Delay != nil {
+				e.Delay()
+			}
 			e.State = newGameState
 			e.onExplodeFinished(changed)
 		}()
@@ -316,8 +318,9 @@ func (e *Engine) onExplodeFinished(explodedChanged bool) {
 
 		go func() {
 			e.State = newGameState
-
-			e.Delay()
+			if e.Delay != nil {
+				e.Delay()
+			}
 			e.onFallFinished()
 		}()
 	} else {
@@ -338,7 +341,9 @@ func (e *Engine) onFallFinished() {
 	}
 
 	go func() {
-		e.Delay()
+		if e.Delay != nil {
+			e.Delay()
+		}
 		e.onAddMissingCandiesFinished()
 	}()
 }
@@ -347,7 +352,9 @@ func (e *Engine) onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
 
 	go func() {
-		e.Delay()
+		if e.Delay != nil {
+			e.Delay()
+		}
 		// explode while possible
 		e.ExplodeAndFallUntilStable()
 	}()
