@@ -24,15 +24,15 @@ func (s *State) Height() int {
 func (s *State) clone() State {
 	// deep copy
 	newBoard := Board{
-		Width:  s.Board.Width,
-		Height: s.Board.Height,
-		Cells:  make([][]Cell, s.Board.Height),
+		Width:  s.Width(),
+		Height: s.Height(),
+		Cells:  make([][]Cell, s.Height()),
 	}
 
-	for i := 0; i < s.Board.Height; i++ {
-		newBoard.Cells[i] = make([]Cell, s.Board.Width)
-		for j := 0; j < s.Board.Width; j++ {
-			newBoard.Cells[i][j] = s.Board.Cells[i][j]
+	for i := 0; i < s.Height(); i++ {
+		newBoard.Cells[i] = make([]Cell, s.Width())
+		for j := 0; j < s.Width(); j++ {
+			newBoard.SetCell(j, i, s.GetCell(j, i))
 		}
 	}
 
