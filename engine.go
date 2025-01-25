@@ -332,13 +332,15 @@ func onAddMissingCandiesFinished() {
 func (e *Engine) AddMissingCandies(state State) State {
 	animationStep = Refill
 
-	for j := 0; j < state.Board.Width; j++ {
-		for i := 0; i < state.Board.Height; i++ {
-			if state.Board.Cells[i][j] == Empty {
-				state.Board.Cells[i][j] = e.randomCell()
+	newState := state.clone()
+
+	for j := 0; j < newState.Board.Width; j++ {
+		for i := 0; i < newState.Board.Height; i++ {
+			if newState.Board.Cells[i][j] == Empty {
+				newState.Board.Cells[i][j] = e.randomCell()
 			}
 		}
 	}
 
-	return state
+	return newState
 }
