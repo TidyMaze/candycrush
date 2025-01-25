@@ -52,6 +52,8 @@ var globalDestroyed [][]bool = nil
 var globalFilled [][]bool = nil
 var globalFallen [][]bool = nil
 
+const UseStateAsBackgroundColor = false
+
 func main() {
 	go func() {
 		window := new(app.Window)
@@ -266,6 +268,10 @@ func draw(window *app.Window) error {
 }
 
 func getBackgroundColor() color.NRGBA {
+	if !UseStateAsBackgroundColor {
+		return whiteColor
+	}
+
 	switch animationStep {
 	case Idle:
 		return whiteColor
