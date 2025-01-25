@@ -169,6 +169,8 @@ func onSwapFinished() {
 	engine.ExplodeAndFallUntilStable()
 }
 
+var lastFramesDuration []time.Duration = make([]time.Duration, 60)
+
 func draw(window *app.Window) error {
 	var ops op.Ops
 
@@ -260,11 +262,31 @@ func draw(window *app.Window) error {
 			// draw the score with size
 			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", gameState.score)).Layout(gtx)
 
+			// draw FPS counter
+			fps := computeFPS(lastFramesDuration)
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("FPS: %d", fps)).Layout(gtx)
+
 			e.Frame(gtx.Ops)
 
 			window.Invalidate()
 		}
 	}
+}
+
+func computeFPS(lastFramesDuration []time.Duration) int {
+	sum := time.Duration(0)
+
+	for _, duration := range lastFramesDuration {
+		sum += duration
+	}
+
+	avg := sum / time.Duration(len(lastFramesDuration))
+
+	if avg == 0 {
+		return 0
+	}
+
+	return int(time.Second / avg)
 }
 
 func getBackgroundColor() color.NRGBA {
