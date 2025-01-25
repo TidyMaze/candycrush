@@ -481,14 +481,6 @@ func drawCircle(
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
 }
 
-func randRange(min, max int) int {
-	return rand.Intn(max-min) + min
-}
-
-func toRad(degrees float32) float32 {
-	return degrees * math.Pi / 180
-}
-
 func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell engine.Cell, sizePct float32, fallPct float64) {
 
 	if cellX < 0 || cellY < 0 {
