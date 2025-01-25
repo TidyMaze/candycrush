@@ -24,6 +24,14 @@ import (
 	"time"
 )
 
+// ui constants
+const cellSizeDp = unit.Dp(75)
+const AnimationSleepMs = 200
+
+var theme = material.NewTheme()
+
+const UseStateAsBackgroundColor = true
+
 func buildUI() *UI {
 
 	engine := engine.Engine{}
@@ -78,14 +86,6 @@ func buildUI() *UI {
 
 	return &ui
 }
-
-// ui constants
-const cellSizeDp = unit.Dp(75)
-const AnimationSleepMs = 200
-
-var theme = material.NewTheme()
-
-const UseStateAsBackgroundColor = true
 
 type UI struct {
 	animationStep      AnimationStep
