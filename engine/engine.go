@@ -189,19 +189,19 @@ func (e *Engine) Fall(state State) (State, [][]bool) {
 
 	newState := state.clone()
 
-	fallen := make([][]bool, newState.Board.Height)
-	for i := 0; i < newState.Board.Height; i++ {
-		fallen[i] = make([]bool, newState.Board.Width)
+	fallen := make([][]bool, newState.Height())
+	for i := 0; i < newState.Height(); i++ {
+		fallen[i] = make([]bool, newState.Width())
 	}
 
-	for j := 0; j < newState.Board.Width; j++ {
-		for i := newState.Board.Height - 1; i >= 0; i-- {
-			if newState.Board.Cells[i][j] == Empty {
+	for j := 0; j < newState.Width(); j++ {
+		for i := newState.Height() - 1; i >= 0; i-- {
+			if newState.GetCell(j, i) == Empty {
 				for k := i - 1; k >= 0; k-- {
-					if newState.Board.Cells[k][j] != Empty {
-						newState.Board.Cells[i][j] = newState.Board.Cells[k][j]
+					if newState.GetCell(j, k) != Empty {
+						newState.SetCell(j, i, newState.GetCell(j, k))
 						fallen[i][j] = true
-						newState.Board.Cells[k][j] = Empty
+						newState.SetCell(j, k, Empty)
 						break
 					}
 				}
