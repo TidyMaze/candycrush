@@ -1,6 +1,9 @@
 package ui
 
-import "image/color"
+import (
+	"image/color"
+	"math/rand"
+)
 
 var ccBackgroundColor = color.NRGBA{R: 45, G: 109, B: 162, A: 255}
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
@@ -22,3 +25,12 @@ var slightGreen = color.NRGBA{R: 0, G: 255, B: 0, A: 127}
 var slightBlue = color.NRGBA{R: 0, G: 0, B: 255, A: 127}
 var slightRed = color.NRGBA{R: 255, G: 0, B: 0, A: 127}
 var slightOrange = color.NRGBA{R: 255, G: 165, B: 0, A: 127}
+
+func randomColor() color.NRGBA {
+	return color.NRGBA{
+		R: uint8(rand.Intn(256)),
+		G: uint8(rand.Intn(256)),
+		B: uint8(rand.Intn(256)),
+		A: 127,
+	}
+}

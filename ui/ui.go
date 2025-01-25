@@ -2,6 +2,7 @@ package ui
 
 import (
 	"candycrush/engine"
+	"candycrush/utils"
 	"fmt"
 	"gioui.org/app"
 	"gioui.org/f32"
@@ -19,7 +20,6 @@ import (
 	"image/color"
 	"log"
 	"math"
-	"math/rand"
 	"os"
 	"time"
 )
@@ -107,13 +107,6 @@ type UI struct {
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
 	clickables         []widget.Clickable
-}
-
-type Ball struct {
-	Location     f32.Point
-	Velocity     f32.Point
-	Acceleration f32.Point
-	color        color.NRGBA
 }
 
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
@@ -213,12 +206,6 @@ func (ui *UI) draw(window *app.Window) error {
 
 	dragStart := f32.Point{X: -1, Y: -1}
 
-	balls := make([]Ball, 0)
-	balls = append(balls, Ball{
-		Location: f32.Point{X: 0, Y: 0},
-		Velocity: f32.Point{X: 0, Y: 0},
-	})
-
 	alreadySwapped := false
 
 	for {
@@ -261,7 +248,7 @@ func (ui *UI) draw(window *app.Window) error {
 			color := redColor
 
 			if dragStart.X != -1 && dragStart.Y != -1 {
-				distance := distance(dragStart, mouseLocation)
+				distance := utils.Distance(dragStart, mouseLocation)
 
 				if pressed {
 					color = slightOrange
@@ -282,13 +269,6 @@ func (ui *UI) draw(window *app.Window) error {
 				if distance > 200 {
 					// reset the drag start
 					dragStart = f32.Point{X: -1, Y: -1}
-
-					// add a new ball
-					balls = append(balls, Ball{
-						Location: f32.Point{X: 0, Y: 0},
-						Velocity: f32.Point{X: 0, Y: 0},
-						color:    randomColor(),
-					})
 				}
 			} else {
 				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
@@ -395,29 +375,6 @@ func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, press
 	return mouseLocation, pressed, dragStart, alreadySwapped
 }
 
-func randomColor() color.NRGBA {
-	return color.NRGBA{
-		R: uint8(rand.Intn(256)),
-		G: uint8(rand.Intn(256)),
-		B: uint8(rand.Intn(256)),
-		A: 127,
-	}
-}
-
-func distance(a, b f32.Point) float64 {
-	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
-}
-
-func lerp(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inputRangePosition float64) float64 {
-	minDest := math.Min(outputRangeStart, outputRangeEnd)
-	maxDest := math.Max(outputRangeStart, outputRangeEnd)
-
-	pct := (inputRangePosition - inputRangeStart) / (inputRangeEnd - inputRangeStart)
-	rescaled := outputRangeStart + pct*(outputRangeEnd-outputRangeStart)
-
-	return math.Max(minDest, math.Min(maxDest, rescaled))
-}
-
 func (ui *UI) drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
 
@@ -431,12 +388,12 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			case Explode:
 				if ui.destroyed != nil && ui.destroyed[i][j] {
 					// linear interpolation
-					sizePct = lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+					sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
 				if ui.filled != nil && ui.filled[i][j] {
-					sizePct = lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+					sizePct = utils.Lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 
@@ -444,7 +401,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 			if ui.animationStep == Fall {
 				if ui.fallen != nil && ui.fallen[i][j] {
-					fallPct = lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+					fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 
