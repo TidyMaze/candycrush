@@ -96,12 +96,14 @@ const (
 )
 
 type UI struct {
-	animationStep  AnimationStep
-	animationSince time.Time
-	destroyed      [][]bool
-	filled         [][]bool
-	fallen         [][]bool
-	engine         Engine
+	animationStep      AnimationStep
+	animationSince     time.Time
+	destroyed          [][]bool
+	filled             [][]bool
+	fallen             [][]bool
+	engine             Engine
+	lastFramesDuration []time.Duration
+	lastFrameTime      time.Time
 }
 
 type Ball struct {
@@ -198,9 +200,6 @@ func (ui *UI) onSwapFinished() {
 	ui.engine.ExplodeAndFallUntilStable()
 }
 
-var lastFramesDuration []time.Duration = make([]time.Duration, 0)
-var lastFrameTime = time.Now()
-
 func (ui *UI) draw(window *app.Window) error {
 	var ops op.Ops
 
@@ -293,7 +292,7 @@ func (ui *UI) draw(window *app.Window) error {
 			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.engine.state.score)).Layout(gtx)
 
 			// draw FPS counter
-			fps := computeFPS(lastFramesDuration)
+			fps := computeFPS(ui.lastFramesDuration)
 
 			// add offset for the FPS counter, to the stack
 			stack := op.Offset(image.Point{X: 500, Y: 0}).Push(gtx.Ops)
@@ -305,14 +304,14 @@ func (ui *UI) draw(window *app.Window) error {
 			e.Frame(gtx.Ops)
 
 			// update the FPS counter
-			lastFramesDuration = append(lastFramesDuration, time.Since(lastFrameTime))
+			ui.lastFramesDuration = append(ui.lastFramesDuration, time.Since(ui.lastFrameTime))
 			keepFrames := 120
 
-			if len(lastFramesDuration) > keepFrames {
-				lastFramesDuration = lastFramesDuration[len(lastFramesDuration)-keepFrames:]
+			if len(ui.lastFramesDuration) > keepFrames {
+				ui.lastFramesDuration = ui.lastFramesDuration[len(ui.lastFramesDuration)-keepFrames:]
 			}
 
-			lastFrameTime = time.Now()
+			ui.lastFrameTime = time.Now()
 
 			window.Invalidate()
 		}
