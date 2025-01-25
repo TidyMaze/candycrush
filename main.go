@@ -47,8 +47,9 @@ const (
 )
 
 var animationStep = Idle
-var destroyingSince = time.Now()
+var animationSince = time.Now()
 var destroyed [][]bool = nil
+var newFilledCells [][]bool = nil
 
 func main() {
 	go func() {
@@ -328,15 +329,14 @@ func lerp(a, b, pct float64) float64 {
 }
 
 func lerpRange(a, b, from, to, p float64) float64 {
-	return lerp(a, b, (p-from)/(to-from))
+	minDest := math.Min(a, b)
+	maxDest := math.Max(a, b)
+
+	return math.Max(minDest, math.Min(maxDest, lerp(a, b, (p-from)/(to-from))))
 }
 
 func drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
-
-	// linear interpolation
-	destroyedSizePct := lerpRange(1, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(destroyingSince).Milliseconds()))
-	destroyedSizePct = math.Max(0, destroyedSizePct)
 
 	//destroyedSizePct := 0.5
 
@@ -344,8 +344,17 @@ func drawGrid(gtx layout.Context) {
 		for j := 0; j < gameState.Board.Width; j++ {
 			sizePct := defaultSizePct
 
-			if animationStep == Explode && destroyed != nil && destroyed[i][j] {
-				sizePct = destroyedSizePct
+			switch animationStep {
+			case Explode:
+				if destroyed != nil && destroyed[i][j] {
+					// linear interpolation
+					sizePct = lerpRange(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+					sizePct = math.Max(0, sizePct)
+				}
+			case Refill:
+				if newFilledCells != nil && newFilledCells[i][j] {
+					sizePct = lerpRange(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+				}
 			}
 
 			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct))

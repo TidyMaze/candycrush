@@ -259,8 +259,8 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 
 	if changed {
 		animationStep = Explode
-		destroyingSince = time.Now()
-		println(fmt.Sprintf("Setting destroying to true, destroyingSince: %s", destroyingSince))
+		animationSince = time.Now()
+		println(fmt.Sprintf("Setting destroying to true, animationSince: %s", animationSince))
 
 		destroyed = exploded
 
@@ -285,7 +285,9 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 			gameState = engine.Fall(gameState)
 
 			// add missing candies
-			gameState = engine.AddMissingCandies(gameState)
+			newGameState2, newFilled := engine.AddMissingCandies(gameState)
+			gameState = newGameState2
+			newFilledCells = newFilled
 		} else {
 			println("No more explosions for this loop")
 			animationStep = Idle
@@ -318,7 +320,9 @@ func onFallFinished() {
 	go func() {
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		// add missing candies
-		gameState = engine.AddMissingCandies(gameState)
+		newGameState, newFilled := engine.AddMissingCandies(gameState)
+		gameState = newGameState
+		newFilledCells = newFilled
 
 		onAddMissingCandiesFinished()
 	}()
@@ -334,18 +338,25 @@ func onAddMissingCandiesFinished() {
 	}()
 }
 
-func (e *Engine) AddMissingCandies(state State) State {
+func (e *Engine) AddMissingCandies(state State) (State, [][]bool) {
 	animationStep = Refill
 
 	newState := state.clone()
+
+	newFilledCellsTmp := make([][]bool, newState.Board.Height)
+	for i := 0; i < newState.Board.Height; i++ {
+		newFilledCellsTmp[i] = make([]bool, newState.Board.Width)
+	}
 
 	for j := 0; j < newState.Board.Width; j++ {
 		for i := 0; i < newState.Board.Height; i++ {
 			if newState.Board.Cells[i][j] == Empty {
 				newState.Board.Cells[i][j] = e.randomCell()
+
+				newFilledCellsTmp[i][j] = true
 			}
 		}
 	}
 
-	return newState
+	return newState, newFilledCellsTmp
 }
