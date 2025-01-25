@@ -527,16 +527,16 @@ func showAnimationStep(step AnimationStep) string {
 func RunUI() {
 	ui := buildUI()
 
-	if ui.engine.State.Board.Width <= 0 || ui.engine.State.Board.Height <= 0 {
-		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.State.Board.Width, ui.engine.State.Board.Height))
+	if ui.Width() <= 0 || ui.Height() <= 0 {
+		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.Width(), ui.Height()))
 	}
 
 	go func() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(ui.engine.State.Board.Width)*cellSizeDp,
-			unit.Dp(ui.engine.State.Board.Height)*cellSizeDp,
+			unit.Dp(ui.Width())*cellSizeDp,
+			unit.Dp(ui.Height())*cellSizeDp,
 		))
 
 		// create clickables
