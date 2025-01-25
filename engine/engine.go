@@ -110,7 +110,9 @@ func (e *Engine) randomCell() Cell {
 	return Cell(rand.Intn(6) + 1)
 }
 
-func (e *Engine) Swap(state State, x1, y1, x2, y2 int) State {
+func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
+	state := oldState.clone()
+
 	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Board.Height {
 		return state
 	}
