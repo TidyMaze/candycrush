@@ -264,7 +264,13 @@ func draw(window *app.Window) error {
 
 			// draw FPS counter
 			fps := computeFPS(lastFramesDuration)
+
+			// add offset for the FPS counter, to the stack
+			stack := op.Offset(image.Point{X: 500, Y: 0}).Push(gtx.Ops)
+
 			material.Label(theme, unit.Sp(24), fmt.Sprintf("FPS: %d", fps)).Layout(gtx)
+
+			stack.Pop()
 
 			e.Frame(gtx.Ops)
 
