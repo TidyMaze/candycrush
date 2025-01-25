@@ -85,7 +85,7 @@ const AnimationSleepMs = 200
 
 var theme = material.NewTheme()
 
-const UseStateAsBackgroundColor = false
+const UseStateAsBackgroundColor = true
 
 type AnimationStep int
 
