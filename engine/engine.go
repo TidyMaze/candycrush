@@ -314,15 +314,15 @@ func (e *Engine) AddMissingCandies(state State) (State, [][]bool) {
 
 	newState := state.clone()
 
-	newFilledCellsTmp := make([][]bool, newState.Board.Height)
-	for i := 0; i < newState.Board.Height; i++ {
-		newFilledCellsTmp[i] = make([]bool, newState.Board.Width)
+	newFilledCellsTmp := make([][]bool, newState.Height())
+	for i := 0; i < newState.Height(); i++ {
+		newFilledCellsTmp[i] = make([]bool, newState.Width())
 	}
 
-	for j := 0; j < newState.Board.Width; j++ {
-		for i := 0; i < newState.Board.Height; i++ {
-			if newState.Board.Cells[i][j] == Empty {
-				newState.Board.Cells[i][j] = e.randomCell()
+	for j := 0; j < newState.Width(); j++ {
+		for i := 0; i < newState.Height(); i++ {
+			if newState.GetCell(j, i) == Empty {
+				newState.SetCell(j, i, e.randomCell())
 
 				newFilledCellsTmp[i][j] = true
 			}
