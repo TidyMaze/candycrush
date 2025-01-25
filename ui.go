@@ -34,19 +34,19 @@ func buildUI() UI {
 	engine.state = state
 
 	ui := UI{
-		animationStep:   Idle,
-		animationSince:  time.Now(),
-		globalDestroyed: nil,
-		globalFilled:    nil,
-		globalFallen:    nil,
-		engine:          engine,
+		animationStep:  Idle,
+		animationSince: time.Now(),
+		destroyed:      nil,
+		filled:         nil,
+		fallen:         nil,
+		engine:         engine,
 	}
 
 	engine.handleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			ui.animationStep = Explode
 			ui.animationSince = time.Now()
-			ui.globalDestroyed = exploded
+			ui.destroyed = exploded
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
 		} else {
@@ -58,7 +58,7 @@ func buildUI() UI {
 	engine.handleExplodeFinished = func(fallen [][]bool) {
 		ui.animationStep = Fall
 		ui.animationSince = time.Now()
-		ui.globalFallen = fallen
+		ui.fallen = fallen
 	}
 
 	engine.handleExplodeFinishedNoChange = func() {
@@ -66,7 +66,7 @@ func buildUI() UI {
 	}
 
 	engine.handleFallFinished = func(newFilled [][]bool) {
-		ui.globalFilled = newFilled
+		ui.filled = newFilled
 		ui.animationSince = time.Now()
 	}
 
@@ -94,12 +94,12 @@ const (
 )
 
 type UI struct {
-	animationStep   AnimationStep
-	animationSince  time.Time
-	globalDestroyed [][]bool
-	globalFilled    [][]bool
-	globalFallen    [][]bool
-	engine          Engine
+	animationStep  AnimationStep
+	animationSince time.Time
+	destroyed      [][]bool
+	filled         [][]bool
+	fallen         [][]bool
+	engine         Engine
 }
 
 const UseStateAsBackgroundColor = false
@@ -424,13 +424,13 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 			switch ui.animationStep {
 			case Explode:
-				if ui.globalDestroyed != nil && ui.globalDestroyed[i][j] {
+				if ui.destroyed != nil && ui.destroyed[i][j] {
 					// linear interpolation
 					sizePct = lerp(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
-				if ui.globalFilled != nil && ui.globalFilled[i][j] {
+				if ui.filled != nil && ui.filled[i][j] {
 					sizePct = lerp(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
@@ -438,7 +438,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			fallPct := float64(1)
 
 			if ui.animationStep == Fall {
-				if ui.globalFallen != nil && ui.globalFallen[i][j] {
+				if ui.fallen != nil && ui.fallen[i][j] {
 					fallPct = lerp(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
