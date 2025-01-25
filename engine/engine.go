@@ -117,7 +117,7 @@ func (e *Engine) findAllTouching(state State, x, y int) []Coord {
 			continue
 		}
 
-		explored[current.y*state.Board.Width+current.x] = true
+		explored[current.y*state.Width()+current.x] = true
 
 		if state.GetCell(current.x, current.y) == state.GetCell(x, y) {
 			touching = append(touching, current)
