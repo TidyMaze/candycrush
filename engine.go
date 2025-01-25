@@ -232,7 +232,6 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
 Fall candies: move candies down to fill empty cells
 */
 func (e *Engine) Fall(state State) State {
-	animationStep = Fall
 
 	newState := state.clone()
 
@@ -282,6 +281,7 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 		gameState = newGameState
 
 		if changed {
+			animationStep = Fall
 			gameState = engine.Fall(gameState)
 
 			// add missing candies
@@ -306,6 +306,7 @@ func onExplodeFinished(explodedChanged bool) {
 	if explodedChanged {
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			animationStep = Fall
 			gameState = engine.Fall(gameState)
 			onFallFinished()
 		}()
