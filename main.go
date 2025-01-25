@@ -34,7 +34,7 @@ var theme = material.NewTheme()
 
 var circlesHovered []image.Point
 
-const ANIMATION_SLEEP_MS = 300
+const ANIMATION_SLEEP_MS = 200
 
 type AnimationStep int
 
