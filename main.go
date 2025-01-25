@@ -268,13 +268,13 @@ func getBackgroundColor() color.NRGBA {
 	case Idle:
 		return whiteColor
 	case Explode:
-		return redColor
+		return darkRedColor
 	case Swap:
-		return blueColor
+		return darkBlueColor
 	case Fall:
-		return greenColor
+		return darkGreenColor
 	case Refill:
-		return purpleColor
+		return darkPurpleColor
 	default:
 		panic(fmt.Sprintf("Invalid animation step: %d", animationStep))
 	}
@@ -456,10 +456,14 @@ func drawRect(gtx layout.Context, x, y, width, height int, color color.NRGBA) {
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
 var whiteColor = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 var redColor = color.NRGBA{R: 255, G: 0, B: 0, A: 255}
+var darkRedColor = color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 var yellowColor = color.NRGBA{R: 255, G: 255, B: 0, A: 255}
 var greenColor = color.NRGBA{R: 0, G: 220, B: 0, A: 255}
+var darkGreenColor = color.NRGBA{R: 0, G: 127, B: 0, A: 255}
 var blueColor = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
+var darkBlueColor = color.NRGBA{R: 0, G: 0, B: 127, A: 255}
 var purpleColor = color.NRGBA{R: 150, G: 0, B: 150, A: 255}
+var darkPurpleColor = color.NRGBA{R: 75, G: 0, B: 75, A: 255}
 var orangeColor = color.NRGBA{R: 255, G: 165, B: 0, A: 255}
 var maroon = color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 var slightDark = color.NRGBA{R: 0, G: 0, B: 0, A: 127}
