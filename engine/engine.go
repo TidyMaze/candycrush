@@ -81,11 +81,6 @@ func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
 	return state
 }
 
-type Coord struct {
-	x int
-	y int
-}
-
 func (e *Engine) findAllTouching(state State, x, y int) []Coord {
 	explored := make([]bool, state.Board.Width*state.Board.Height)
 	touching := make([]Coord, 0)
