@@ -43,7 +43,7 @@ func buildUI() UI {
 	engine.handleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			ui.animationStep = Explode
-			ui.animationSince = time.Now()
+			ui.setAnimStart()
 			ui.destroyed = exploded
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
@@ -55,7 +55,7 @@ func buildUI() UI {
 
 	engine.handleExplodeFinished = func(fallen [][]bool) {
 		ui.animationStep = Fall
-		ui.animationSince = time.Now()
+		ui.setAnimStart()
 		ui.fallen = fallen
 	}
 
@@ -65,7 +65,7 @@ func buildUI() UI {
 
 	engine.handleFallFinished = func(newFilled [][]bool) {
 		ui.filled = newFilled
-		ui.animationSince = time.Now()
+		ui.setAnimStart()
 	}
 
 	engine.handleAddMissingCandies = func() {
@@ -589,6 +589,11 @@ func (ui *UI) run(window *app.Window) error {
 	ui.draw(window)
 
 	return nil
+}
+
+func (ui *UI) setAnimStart() {
+	println("Setting animation start")
+	ui.animationSince = time.Now()
 }
 
 func runUI() {
