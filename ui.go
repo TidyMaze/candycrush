@@ -16,8 +16,10 @@ import (
 	"gioui.org/widget/material"
 	"image"
 	"image/color"
+	"log"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -541,4 +543,25 @@ func run(window *app.Window) error {
 	draw(window)
 
 	return nil
+}
+
+func runUI() {
+	go func() {
+		window := new(app.Window)
+
+		window.Option(app.Size(
+			unit.Dp(gameState.Board.Width)*cellSizeDp,
+			unit.Dp(gameState.Board.Height)*cellSizeDp,
+		))
+
+		// create clickables
+		clickables = make([]widget.Clickable, gameState.Board.Width*gameState.Board.Height)
+
+		err := run(window)
+		if err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+	}()
+	app.Main()
 }
