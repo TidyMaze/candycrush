@@ -5,6 +5,14 @@ type State struct {
 	Score int
 }
 
+func (s *State) Width() int {
+	return s.Board.Width
+}
+
+func (s *State) Height() int {
+	return s.Board.Height
+}
+
 func (s *State) clone() State {
 	// deep copy
 	newBoard := Board{

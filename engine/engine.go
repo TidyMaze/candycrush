@@ -19,6 +19,14 @@ type Engine struct {
 	Delay                         func()
 }
 
+func (e *Engine) Width() int {
+	return e.State.Width()
+}
+
+func (e *Engine) Height() int {
+	return e.State.Height()
+}
+
 func (e *Engine) Init() State {
 
 	width := 9

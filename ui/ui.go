@@ -499,6 +499,14 @@ func (ui *UI) setAnimStep(step AnimationStep) {
 	ui.animationStep = step
 }
 
+func (ui *UI) Width() int {
+	return ui.engine.Width()
+}
+
+func (ui *UI) Height() int {
+	return ui.engine.Height()
+}
+
 func showAnimationStep(step AnimationStep) string {
 	switch step {
 	case Idle:
@@ -532,7 +540,7 @@ func RunUI() {
 		))
 
 		// create clickables
-		ui.clickables = make([]widget.Clickable, ui.engine.State.Board.Width*ui.engine.State.Board.Height)
+		ui.clickables = make([]widget.Clickable, ui.Width()*ui.Height())
 
 		err := ui.run(window)
 		if err != nil {
