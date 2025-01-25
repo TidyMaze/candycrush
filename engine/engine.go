@@ -110,52 +110,17 @@ func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
 	return state
 }
 
-func (e *Engine) findAllTouching(state State, x, y int) []Coord {
-	explored := make([]bool, state.Width()*state.Height())
-	touching := make([]Coord, 0)
-
-	q := make([]Coord, 0)
-
-	q = append(q, Coord{x: x, y: y})
-
-	for len(q) > 0 {
-		current := q[0]
-		q = q[1:]
-
-		if current.x < 0 || current.x >= state.Width() || current.y < 0 || current.y >= state.Height() {
-			continue
-		}
-
-		if explored[current.y*state.Width()+current.x] {
-			continue
-		}
-
-		explored[current.y*state.Width()+current.x] = true
-
-		if state.GetCell(current.x, current.y) == state.GetCell(x, y) {
-			touching = append(touching, current)
-			q = append(q, Coord{x: current.x - 1, y: current.y})
-			q = append(q, Coord{x: current.x + 1, y: current.y})
-			q = append(q, Coord{x: current.x, y: current.y - 1})
-			q = append(q, Coord{x: current.x, y: current.y + 1})
-		}
-
-	}
-
-	return touching
-}
-
 func (e *Engine) findAllExploding(state State) [][]bool {
-	exploding := make([][]bool, state.Board.Height)
+	exploding := make([][]bool, state.Height())
 
-	for i := 0; i < state.Board.Height; i++ {
-		exploding[i] = make([]bool, state.Board.Width)
+	for i := 0; i < state.Height(); i++ {
+		exploding[i] = make([]bool, state.Width())
 	}
 
 	// Explode rows
-	for i := 0; i < state.Board.Height; i++ {
-		for j := 0; j < state.Board.Width-2; j++ {
-			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i][j+1] && state.Board.Cells[i][j] == state.Board.Cells[i][j+2] {
+	for i := 0; i < state.Height(); i++ {
+		for j := 0; j < state.Width()-2; j++ {
+			if state.GetCell(j, i) != Empty && state.GetCell(j, i) == state.GetCell(j+1, i) && state.GetCell(j, i) == state.GetCell(j+2, i) {
 				exploding[i][j] = true
 				exploding[i][j+1] = true
 				exploding[i][j+2] = true
@@ -166,7 +131,7 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 	// Explode columns
 	for i := 0; i < state.Board.Height-2; i++ {
 		for j := 0; j < state.Board.Width; j++ {
-			if state.Board.Cells[i][j] != Empty && state.Board.Cells[i][j] == state.Board.Cells[i+1][j] && state.Board.Cells[i][j] == state.Board.Cells[i+2][j] {
+			if state.GetCell(j, i) != Empty && state.GetCell(j, i) == state.GetCell(j, i+1) && state.GetCell(j, i) == state.GetCell(j, i+2) {
 				exploding[i][j] = true
 				exploding[i+1][j] = true
 				exploding[i+2][j] = true
@@ -188,10 +153,10 @@ func (e *Engine) explode(state State) (State, [][]bool) {
 	exploding := e.findAllExploding(newState)
 
 	// Explode candies
-	for i := 0; i < newState.Board.Height; i++ {
-		for j := 0; j < newState.Board.Width; j++ {
+	for i := 0; i < newState.Height(); i++ {
+		for j := 0; j < newState.Width(); j++ {
 			if exploding[i][j] {
-				newState.Board.Cells[i][j] = Empty
+				newState.SetCell(j, i, Empty)
 				score++
 			}
 		}
