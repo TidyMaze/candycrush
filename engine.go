@@ -317,13 +317,16 @@ func onExplodeFinished(explodedChanged bool) {
 func onFallFinished() {
 	println("Fall finished")
 
-	go func() {
-		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-		// add missing candies
-		newGameState, newFilled := engine.AddMissingCandies(gameState)
-		gameState = newGameState
-		newFilledCells = newFilled
+	// add missing candies
+	newGameState, newFilled := engine.AddMissingCandies(gameState)
 
+	gameState = newGameState
+	newFilledCells = newFilled
+
+	go func() {
+		animationSince = time.Now()
+
+		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		onAddMissingCandiesFinished()
 	}()
 }
