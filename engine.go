@@ -97,7 +97,11 @@ func (e *Engine) InitRandom() {
 		}
 	}
 
-	state = e.ExplodeAndFallUntilStableSync(state)
+	if state.Board.Width <= 0 || state.Board.Height <= 0 {
+		panic("Invalid board size")
+	}
+
+	e.ExplodeAndFallUntilStableSync()
 
 	state.score = 0
 }
@@ -278,19 +282,19 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 	}
 }
 
-func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
+func (e *Engine) ExplodeAndFallUntilStableSync() {
 	// explode while possible
 	for {
-		newGameState, changed, _ := e.ExplodeAndScore(gameState)
-		gameState = newGameState
+		newGameState, changed, _ := e.ExplodeAndScore(e.state)
+		e.state = newGameState
 
 		if changed {
-			newGameState, _ := e.Fall(gameState)
-			gameState = newGameState
+			newGameState, _ := e.Fall(e.state)
+			e.state = newGameState
 
 			// add missing candies
-			newGameState2, _ := e.AddMissingCandies(gameState)
-			gameState = newGameState2
+			newGameState2, _ := e.AddMissingCandies(e.state)
+			e.state = newGameState2
 		} else {
 			println("No more explosions for this loop")
 			break
@@ -298,8 +302,6 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 	}
 
 	println("Explode and fall until stable finished")
-
-	return gameState
 }
 
 func (e *Engine) onExplodeFinished(explodedChanged bool) {
