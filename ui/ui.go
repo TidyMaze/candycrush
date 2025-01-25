@@ -182,7 +182,9 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
-		ui.engine.Delay()
+		if ui.engine.Delay != nil {
+			ui.engine.Delay()
+		}
 		ui.onSwapFinished()
 	}()
 }
