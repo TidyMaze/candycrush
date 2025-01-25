@@ -314,6 +314,7 @@ func onExplodeFinished(explodedChanged bool) {
 		newGameState, fallen := engine.Fall(gameState)
 
 		animationStep = Fall
+		animationSince = time.Now()
 
 		go func() {
 			gameState = newGameState

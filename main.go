@@ -358,7 +358,15 @@ func drawGrid(gtx layout.Context) {
 				}
 			}
 
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct))
+			fallPct := float64(1)
+
+			if animationStep == Fall {
+				if globalFallen != nil && globalFallen[i][j] {
+					fallPct = lerpRange(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+				}
+			}
+
+			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct), fallPct)
 		}
 	}
 	//print(".")
@@ -401,7 +409,7 @@ func toRad(degrees float32) float32 {
 	return degrees * math.Pi / 180
 }
 
-func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32) {
+func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32, fallPct float64) {
 
 	if cellX < 0 || cellY < 0 {
 		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
@@ -415,17 +423,14 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		clickable: &clickables[cellY*gameState.Board.Width+cellX],
 	}
 
-	// random offset base on sin/cos and elapsed time
-	rOffset := image.Point{
-		X: 0,
-		Y: 0,
-	}
+	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
+	fallOffset := (1 - fallPct) * float64(gtx.Dp(cellSizeDp))
 
-	// offset
+	// size offset
 	emptySize := float32(gtx.Dp(cellSizeDp)) * (1 - sizePct)
 
-	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + rOffset.X + int(emptySize/2)
-	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) + rOffset.Y + int(emptySize/2)
+	cellGlobalX := cellX*gtx.Dp(cellWidget.cellSize) + int(emptySize/2)
+	cellGlobalY := cellY*gtx.Dp(cellWidget.cellSize) - int(fallOffset) + int(emptySize/2)
 
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
