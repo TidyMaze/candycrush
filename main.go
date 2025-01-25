@@ -331,7 +331,7 @@ func distance(a, b f32.Point) float64 {
 	return math.Sqrt(math.Pow(float64(a.X-b.X), 2) + math.Pow(float64(a.Y-b.Y), 2))
 }
 
-func lerpRange(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inputRangePosition float64) float64 {
+func lerp(outputRangeStart, outputRangeEnd, inputRangeStart, inputRangeEnd, inputRangePosition float64) float64 {
 	minDest := math.Min(outputRangeStart, outputRangeEnd)
 	maxDest := math.Max(outputRangeStart, outputRangeEnd)
 
@@ -354,12 +354,12 @@ func drawGrid(gtx layout.Context) {
 			case Explode:
 				if globalDestroyed != nil && globalDestroyed[i][j] {
 					// linear interpolation
-					sizePct = lerpRange(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+					sizePct = lerp(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
 				if globalFilled != nil && globalFilled[i][j] {
-					sizePct = lerpRange(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+					sizePct = lerp(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
 				}
 			}
 
@@ -367,7 +367,7 @@ func drawGrid(gtx layout.Context) {
 
 			if animationStep == Fall {
 				if globalFallen != nil && globalFallen[i][j] {
-					fallPct = lerpRange(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
+					fallPct = lerp(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
 				}
 			}
 
