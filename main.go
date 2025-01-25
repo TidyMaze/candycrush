@@ -269,12 +269,12 @@ func draw(window *app.Window) error {
 
 func getBackgroundColor() color.NRGBA {
 	if !UseStateAsBackgroundColor {
-		return whiteColor
+		return ccBackgroundColor
 	}
 
 	switch animationStep {
 	case Idle:
-		return whiteColor
+		return ccBackgroundColor
 	case Explode:
 		return darkRedColor
 	case Swap:
@@ -474,6 +474,7 @@ func drawRect(gtx layout.Context, x, y, width, height int, color color.NRGBA) {
 	paint.Fill(gtx.Ops, color)
 }
 
+var ccBackgroundColor = color.NRGBA{R: 45, G: 109, B: 162, A: 255}
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
 var whiteColor = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 var redColor = color.NRGBA{R: 255, G: 0, B: 0, A: 255}
