@@ -93,15 +93,20 @@ func (e *Engine) randomCell() Cell {
 func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
 	state := oldState.clone()
 
-	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Board.Height {
+	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Height() {
 		return state
 	}
 
-	if x2 < 0 || x2 >= state.Board.Width || y2 < 0 || y2 >= state.Board.Height {
+	if x2 < 0 || x2 >= state.Board.Width || y2 < 0 || y2 >= state.Height() {
 		return state
 	}
 
-	state.Board.Cells[y1][x1], state.Board.Cells[y2][x2] = state.Board.Cells[y2][x2], state.Board.Cells[y1][x1]
+	old1 := state.GetCell(x1, y1)
+	old2 := state.GetCell(x2, y2)
+
+	state.SetCell(x1, y1, old2)
+	state.SetCell(x2, y2, old1)
+
 	return state
 }
 
