@@ -1,9 +1,8 @@
-package main
+package engine
 
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 /**
@@ -30,7 +29,7 @@ type Board struct {
 
 type State struct {
 	Board Board
-	score int
+	Score int
 }
 
 func (s *State) clone() State {
@@ -50,17 +49,18 @@ func (s *State) clone() State {
 
 	return State{
 		Board: newBoard,
-		score: s.score,
+		Score: s.Score,
 	}
 }
 
 type Engine struct {
-	state                         State
-	handleChangedAfterExplode     func(changed bool, exploded [][]bool)
-	handleExplodeFinished         func(fallen [][]bool)
-	handleExplodeFinishedNoChange func()
-	handleFallFinished            func(newFilled [][]bool)
-	handleAddMissingCandies       func()
+	State                         State
+	HandleChangedAfterExplode     func(changed bool, exploded [][]bool)
+	HandleExplodeFinished         func(fallen [][]bool)
+	HandleExplodeFinishedNoChange func()
+	HandleFallFinished            func(newFilled [][]bool)
+	HandleAddMissingCandies       func()
+	Delay                         func()
 }
 
 func (e *Engine) Init() State {
@@ -83,27 +83,27 @@ func (e *Engine) Init() State {
 
 	return State{
 		Board: board,
-		score: 0,
+		Score: 0,
 	}
 }
 
 func (e *Engine) InitRandom() {
 
-	e.state = e.Init()
+	e.State = e.Init()
 
-	for i := 0; i < e.state.Board.Height; i++ {
-		for j := 0; j < e.state.Board.Width; j++ {
-			e.state.Board.Cells[i][j] = e.randomCell()
+	for i := 0; i < e.State.Board.Height; i++ {
+		for j := 0; j < e.State.Board.Width; j++ {
+			e.State.Board.Cells[i][j] = e.randomCell()
 		}
 	}
 
-	if e.state.Board.Width <= 0 || e.state.Board.Height <= 0 {
+	if e.State.Board.Width <= 0 || e.State.Board.Height <= 0 {
 		panic("Invalid board size")
 	}
 
 	e.ExplodeAndFallUntilStableSync()
 
-	e.state.score = 0
+	e.State.Score = 0
 }
 
 func (e *Engine) randomCell() Cell {
@@ -216,7 +216,7 @@ func (e *Engine) explode(state State) (State, [][]bool) {
 	}
 
 	// Update score
-	newState.score += score
+	newState.Score += score
 
 	return newState, exploding
 }
@@ -225,12 +225,12 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
 	changed := false
 
 	newState, exploded := e.explode(state)
-	if newState.score != state.score {
+	if newState.Score != state.Score {
 		changed = true
 		state = newState
 	}
 
-	println(fmt.Sprintf("Score: %d", state.score))
+	println(fmt.Sprintf("Score: %d", state.Score))
 
 	return state, changed, exploded
 }
@@ -267,16 +267,16 @@ func (e *Engine) Fall(state State) (State, [][]bool) {
 
 func (e *Engine) ExplodeAndFallUntilStable() {
 	// explode while possible
-	newGameState, changed, exploded := e.ExplodeAndScore(e.state)
+	newGameState, changed, exploded := e.ExplodeAndScore(e.State)
 
-	if e.handleChangedAfterExplode != nil {
-		e.handleChangedAfterExplode(changed, exploded)
+	if e.HandleChangedAfterExplode != nil {
+		e.HandleChangedAfterExplode(changed, exploded)
 	}
 
 	if changed {
 		go func() {
-			time.Sleep(AnimationSleepMs * time.Millisecond)
-			e.state = newGameState
+			e.Delay()
+			e.State = newGameState
 			e.onExplodeFinished(changed)
 		}()
 	}
@@ -285,16 +285,16 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 func (e *Engine) ExplodeAndFallUntilStableSync() {
 	// explode while possible
 	for {
-		newGameState, changed, _ := e.ExplodeAndScore(e.state)
-		e.state = newGameState
+		newGameState, changed, _ := e.ExplodeAndScore(e.State)
+		e.State = newGameState
 
 		if changed {
-			newGameState, _ := e.Fall(e.state)
-			e.state = newGameState
+			newGameState, _ := e.Fall(e.State)
+			e.State = newGameState
 
 			// add missing candies
-			newGameState2, _ := e.AddMissingCandies(e.state)
-			e.state = newGameState2
+			newGameState2, _ := e.AddMissingCandies(e.State)
+			e.State = newGameState2
 		} else {
 			println("No more explosions for this loop")
 			break
@@ -308,20 +308,20 @@ func (e *Engine) onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
 	if explodedChanged {
-		newGameState, fallen := e.Fall(e.state)
+		newGameState, fallen := e.Fall(e.State)
 
-		if e.handleExplodeFinished != nil {
-			e.handleExplodeFinished(fallen)
+		if e.HandleExplodeFinished != nil {
+			e.HandleExplodeFinished(fallen)
 		}
 
 		go func() {
-			e.state = newGameState
+			e.State = newGameState
 
-			time.Sleep(AnimationSleepMs * time.Millisecond)
+			e.Delay()
 			e.onFallFinished()
 		}()
 	} else {
-		e.handleExplodeFinishedNoChange()
+		e.HandleExplodeFinishedNoChange()
 	}
 }
 
@@ -329,16 +329,16 @@ func (e *Engine) onFallFinished() {
 	println("Fall finished")
 
 	// add missing candies
-	newGameState, newFilled := e.AddMissingCandies(e.state)
+	newGameState, newFilled := e.AddMissingCandies(e.State)
 
-	e.state = newGameState
+	e.State = newGameState
 
-	if e.handleFallFinished != nil {
-		e.handleFallFinished(newFilled)
+	if e.HandleFallFinished != nil {
+		e.HandleFallFinished(newFilled)
 	}
 
 	go func() {
-		time.Sleep(AnimationSleepMs * time.Millisecond)
+		e.Delay()
 		e.onAddMissingCandiesFinished()
 	}()
 }
@@ -347,15 +347,15 @@ func (e *Engine) onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
 
 	go func() {
-		time.Sleep(AnimationSleepMs * time.Millisecond)
+		e.Delay()
 		// explode while possible
 		e.ExplodeAndFallUntilStable()
 	}()
 }
 
 func (e *Engine) AddMissingCandies(state State) (State, [][]bool) {
-	if e.handleAddMissingCandies != nil {
-		e.handleAddMissingCandies()
+	if e.HandleAddMissingCandies != nil {
+		e.HandleAddMissingCandies()
 	}
 
 	newState := state.clone()

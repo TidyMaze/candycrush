@@ -1,6 +1,7 @@
-package main
+package ui
 
 import (
+	"candycrush/engine"
 	"fmt"
 	"gioui.org/app"
 	"gioui.org/f32"
@@ -25,7 +26,7 @@ import (
 
 func buildUI() UI {
 
-	engine := Engine{}
+	engine := engine.Engine{}
 
 	engine.InitRandom()
 
@@ -38,7 +39,7 @@ func buildUI() UI {
 		engine:         engine,
 	}
 
-	engine.handleChangedAfterExplode = func(changed bool, exploded [][]bool) {
+	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			ui.setAnimStep(Explode)
 			ui.setAnimStart()
@@ -51,23 +52,28 @@ func buildUI() UI {
 		}
 	}
 
-	engine.handleExplodeFinished = func(fallen [][]bool) {
+	engine.HandleExplodeFinished = func(fallen [][]bool) {
 		ui.setAnimStep(Fall)
 		ui.setAnimStart()
 		ui.fallen = fallen
 	}
 
-	engine.handleExplodeFinishedNoChange = func() {
+	engine.HandleExplodeFinishedNoChange = func() {
 		ui.setAnimStep(Idle)
 	}
 
-	engine.handleFallFinished = func(newFilled [][]bool) {
+	engine.HandleFallFinished = func(newFilled [][]bool) {
 		ui.filled = newFilled
 		ui.setAnimStart()
 	}
 
-	engine.handleAddMissingCandies = func() {
+	engine.HandleAddMissingCandies = func() {
 		ui.setAnimStep(Refill)
+	}
+
+	engine.Delay = func() {
+		println(fmt.Sprintf("Sleeping for %d ms", AnimationSleepMs))
+		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
 
 	return ui
@@ -97,7 +103,7 @@ type UI struct {
 	destroyed          [][]bool
 	filled             [][]bool
 	fallen             [][]bool
-	engine             Engine
+	engine             engine.Engine
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
 	clickables         []widget.Clickable
@@ -119,7 +125,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	if ui.engine.state.Board.Cells[cellY][cellX] == Empty {
+	if ui.engine.State.Board.Cells[cellY][cellX] == engine.Empty {
 		println("Empty cell, skipping")
 		return
 	}
@@ -129,25 +135,25 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	verticalDiff := float64(dragEnd.Y - dragStart.Y)
 	horizontalDiff := float64(dragEnd.X - dragStart.X)
 
-	dir := Direction(-1)
+	dir := engine.Direction(-1)
 
 	if math.Abs(verticalDiff) > math.Abs(horizontalDiff) {
 		// vertical drag
 		if verticalDiff > 0 {
 			println("Down")
-			dir = Down
+			dir = engine.Down
 		} else {
 			println("Up")
-			dir = Up
+			dir = engine.Up
 		}
 	} else {
 		// horizontal drag
 		if horizontalDiff > 0 {
 			println("Right")
-			dir = Right
+			dir = engine.Right
 		} else {
 			println("Left")
-			dir = Left
+			dir = engine.Left
 		}
 	}
 
@@ -159,20 +165,20 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	offset := f32.Point{X: 0, Y: 0}
 
 	switch dir {
-	case Up:
+	case engine.Up:
 		offset = f32.Point{X: 0, Y: -1}
-	case Down:
+	case engine.Down:
 		offset = f32.Point{X: 0, Y: 1}
-	case Left:
+	case engine.Left:
 		offset = f32.Point{X: -1, Y: 0}
-	case Right:
+	case engine.Right:
 		offset = f32.Point{X: 1, Y: 0}
 	}
 
 	ui.setAnimStep(Swap)
 
 	// swap the 2 cells in state
-	ui.engine.state = ui.engine.Swap(ui.engine.state, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+	ui.engine.State = ui.engine.Swap(ui.engine.State, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
@@ -277,7 +283,7 @@ func (ui *UI) draw(window *app.Window) error {
 			}
 
 			// draw the score with size
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.engine.state.score)).Layout(gtx)
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.engine.State.Score)).Layout(gtx)
 
 			// draw FPS counter
 			fps := computeFPS(ui.lastFramesDuration)
@@ -405,8 +411,8 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 	//destroyedSizePct := 0.5
 
-	for i := 0; i < ui.engine.state.Board.Height; i++ {
-		for j := 0; j < ui.engine.state.Board.Width; j++ {
+	for i := 0; i < ui.engine.State.Board.Height; i++ {
+		for j := 0; j < ui.engine.State.Board.Width; j++ {
 			sizePct := defaultSizePct
 
 			switch ui.animationStep {
@@ -430,7 +436,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 				}
 			}
 
-			ui.drawCell(cellSizeDp, gtx, j, i, ui.engine.state.Board.Cells[i][j], float32(sizePct), fallPct)
+			ui.drawCell(cellSizeDp, gtx, j, i, ui.engine.State.Board.Cells[i][j], float32(sizePct), fallPct)
 		}
 	}
 	//print(".")
@@ -438,7 +444,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 type CellWidget struct {
 	X, Y      int
-	Cell      Cell
+	Cell      engine.Cell
 	cellSize  unit.Dp
 	clickable *widget.Clickable
 }
@@ -471,7 +477,7 @@ func toRad(degrees float32) float32 {
 	return degrees * math.Pi / 180
 }
 
-func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell Cell, sizePct float32, fallPct float64) {
+func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell engine.Cell, sizePct float32, fallPct float64) {
 
 	if cellX < 0 || cellY < 0 {
 		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
@@ -482,7 +488,7 @@ func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY in
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: &ui.clickables[cellY*ui.engine.state.Board.Width+cellX],
+		clickable: &ui.clickables[cellY*ui.engine.State.Board.Width+cellX],
 	}
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
@@ -551,21 +557,21 @@ var slightBlue = color.NRGBA{R: 0, G: 0, B: 255, A: 127}
 var slightRed = color.NRGBA{R: 255, G: 0, B: 0, A: 127}
 var slightOrange = color.NRGBA{R: 255, G: 165, B: 0, A: 127}
 
-func getColor(cell Cell) color.NRGBA {
+func getColor(cell engine.Cell) color.NRGBA {
 	switch cell {
-	case Empty:
+	case engine.Empty:
 		return emptyColor
-	case Red:
+	case engine.Red:
 		return redColor
-	case Yellow:
+	case engine.Yellow:
 		return yellowColor
-	case Green:
+	case engine.Green:
 		return greenColor
-	case Blue:
+	case engine.Blue:
 		return blueColor
-	case Purple:
+	case engine.Purple:
 		return purpleColor
-	case Orange:
+	case engine.Orange:
 		return orangeColor
 	default:
 		panic("Invalid cell")
@@ -607,23 +613,23 @@ func showAnimationStep(step AnimationStep) string {
 	}
 }
 
-func runUI() {
+func RunUI() {
 	ui := buildUI()
 
-	if ui.engine.state.Board.Width <= 0 || ui.engine.state.Board.Height <= 0 {
-		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.state.Board.Width, ui.engine.state.Board.Height))
+	if ui.engine.State.Board.Width <= 0 || ui.engine.State.Board.Height <= 0 {
+		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.State.Board.Width, ui.engine.State.Board.Height))
 	}
 
 	go func() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(ui.engine.state.Board.Width)*cellSizeDp,
-			unit.Dp(ui.engine.state.Board.Height)*cellSizeDp,
+			unit.Dp(ui.engine.State.Board.Width)*cellSizeDp,
+			unit.Dp(ui.engine.State.Board.Height)*cellSizeDp,
 		))
 
 		// create clickables
-		ui.clickables = make([]widget.Clickable, ui.engine.state.Board.Width*ui.engine.state.Board.Height)
+		ui.clickables = make([]widget.Clickable, ui.engine.State.Board.Width*ui.engine.State.Board.Height)
 
 		err := ui.run(window)
 		if err != nil {

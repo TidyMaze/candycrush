@@ -1,5 +1,7 @@
 package main
 
+import "candycrush/ui"
+
 func main() {
-	runUI()
+	ui.RunUI()
 }
