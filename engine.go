@@ -311,12 +311,15 @@ func onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
 	if explodedChanged {
+		newGameState, fallen := engine.Fall(gameState)
+
+		animationStep = Fall
+
 		go func() {
-			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-			animationStep = Fall
-			newGameState, fallen := engine.Fall(gameState)
 			gameState = newGameState
 			globalFallen = fallen
+
+			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 			onFallFinished()
 		}()
 	} else {
