@@ -42,25 +42,25 @@ func buildUI() UI {
 
 	engine.handleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
-			ui.animationStep = Explode
+			ui.setAnimStep(Explode)
 			ui.setAnimStart()
 			ui.destroyed = exploded
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
 		} else {
 			println("Explode and fall until stable finished")
-			ui.animationStep = Idle
+			ui.setAnimStep(Idle)
 		}
 	}
 
 	engine.handleExplodeFinished = func(fallen [][]bool) {
-		ui.animationStep = Fall
+		ui.setAnimStep(Fall)
 		ui.setAnimStart()
 		ui.fallen = fallen
 	}
 
 	engine.handleExplodeFinishedNoChange = func() {
-		ui.animationStep = Idle
+		ui.setAnimStep(Idle)
 	}
 
 	engine.handleFallFinished = func(newFilled [][]bool) {
@@ -69,7 +69,7 @@ func buildUI() UI {
 	}
 
 	engine.handleAddMissingCandies = func() {
-		ui.animationStep = Refill
+		ui.setAnimStep(Refill)
 	}
 
 	return ui
@@ -180,7 +180,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		offset = f32.Point{X: 1, Y: 0}
 	}
 
-	ui.animationStep = Swap
+	ui.setAnimStep(Swap)
 
 	// swap the 2 cells in state
 	ui.engine.state = ui.engine.Swap(ui.engine.state, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
@@ -594,6 +594,28 @@ func (ui *UI) run(window *app.Window) error {
 func (ui *UI) setAnimStart() {
 	println("Setting animation start")
 	ui.animationSince = time.Now()
+}
+
+func (ui *UI) setAnimStep(step AnimationStep) {
+	println(fmt.Sprintf("Setting animation step to %s", showAnimationStep(step)))
+	ui.animationStep = step
+}
+
+func showAnimationStep(step AnimationStep) string {
+	switch step {
+	case Idle:
+		return "Idle"
+	case Swap:
+		return "Swap"
+	case Explode:
+		return "Explode"
+	case Fall:
+		return "Fall"
+	case Refill:
+		return "Refill"
+	default:
+		panic(fmt.Sprintf("Invalid animation step: %d", step))
+	}
 }
 
 func runUI() {
