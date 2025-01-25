@@ -313,11 +313,11 @@ func onExplodeFinished(explodedChanged bool) {
 func onFallFinished() {
 	println("Fall finished")
 
-	// add missing candies
-	gameState = engine.AddMissingCandies(gameState)
-
 	go func() {
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+		// add missing candies
+		gameState = engine.AddMissingCandies(gameState)
+
 		onAddMissingCandiesFinished()
 	}()
 }
@@ -326,8 +326,11 @@ func onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
 	animationStep = Idle
 
-	// explode while possible
-	engine.ExplodeAndFallUntilStable()
+	go func() {
+		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+		// explode while possible
+		engine.ExplodeAndFallUntilStable()
+	}()
 }
 
 func (e *Engine) AddMissingCandies(state State) State {
