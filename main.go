@@ -48,8 +48,9 @@ const (
 
 var animationStep = Idle
 var animationSince = time.Now()
-var destroyed [][]bool = nil
-var newFilledCells [][]bool = nil
+var globalDestroyed [][]bool = nil
+var globalFilled [][]bool = nil
+var globalFallen [][]bool = nil
 
 func main() {
 	go func() {
@@ -346,13 +347,13 @@ func drawGrid(gtx layout.Context) {
 
 			switch animationStep {
 			case Explode:
-				if destroyed != nil && destroyed[i][j] {
+				if globalDestroyed != nil && globalDestroyed[i][j] {
 					// linear interpolation
 					sizePct = lerpRange(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
-				if newFilledCells != nil && newFilledCells[i][j] {
+				if globalFilled != nil && globalFilled[i][j] {
 					sizePct = lerpRange(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(animationSince).Milliseconds()))
 				}
 			}

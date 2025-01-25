@@ -231,9 +231,14 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
 /*
 Fall candies: move candies down to fill empty cells
 */
-func (e *Engine) Fall(state State) State {
+func (e *Engine) Fall(state State) (State, [][]bool) {
 
 	newState := state.clone()
+
+	fallen := make([][]bool, newState.Board.Height)
+	for i := 0; i < newState.Board.Height; i++ {
+		fallen[i] = make([]bool, newState.Board.Width)
+	}
 
 	for j := 0; j < newState.Board.Width; j++ {
 		for i := newState.Board.Height - 1; i >= 0; i-- {
@@ -241,6 +246,7 @@ func (e *Engine) Fall(state State) State {
 				for k := i - 1; k >= 0; k-- {
 					if newState.Board.Cells[k][j] != Empty {
 						newState.Board.Cells[i][j] = newState.Board.Cells[k][j]
+						fallen[i][j] = true
 						newState.Board.Cells[k][j] = Empty
 						break
 					}
@@ -249,7 +255,7 @@ func (e *Engine) Fall(state State) State {
 		}
 	}
 
-	return newState
+	return newState, fallen
 }
 
 func (e *Engine) ExplodeAndFallUntilStable() {
@@ -261,7 +267,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 		animationSince = time.Now()
 		println(fmt.Sprintf("Setting destroying to true, animationSince: %s", animationSince))
 
-		destroyed = exploded
+		globalDestroyed = exploded
 
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
@@ -282,12 +288,13 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 
 		if changed {
 			animationStep = Fall
-			gameState = engine.Fall(gameState)
+			newGameState, _ := engine.Fall(gameState)
+			gameState = newGameState
 
 			// add missing candies
 			newGameState2, newFilled := engine.AddMissingCandies(gameState)
 			gameState = newGameState2
-			newFilledCells = newFilled
+			globalFilled = newFilled
 		} else {
 			println("No more explosions for this loop")
 			animationStep = Idle
@@ -307,7 +314,9 @@ func onExplodeFinished(explodedChanged bool) {
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 			animationStep = Fall
-			gameState = engine.Fall(gameState)
+			newGameState, fallen := engine.Fall(gameState)
+			gameState = newGameState
+			globalFallen = fallen
 			onFallFinished()
 		}()
 	} else {
@@ -322,7 +331,7 @@ func onFallFinished() {
 	newGameState, newFilled := engine.AddMissingCandies(gameState)
 
 	gameState = newGameState
-	newFilledCells = newFilled
+	globalFilled = newFilled
 
 	go func() {
 		animationSince = time.Now()
