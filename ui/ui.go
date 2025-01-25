@@ -636,6 +636,10 @@ func RunUI() {
 		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.State.Board.Width, ui.engine.State.Board.Height))
 	}
 
+	if ui.engine.Delay == nil {
+		panic("Delay is nil")
+	}
+
 	go func() {
 		window := new(app.Window)
 
