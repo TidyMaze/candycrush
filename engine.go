@@ -92,6 +92,8 @@ func (e *Engine) InitRandom() State {
 
 	state = e.ExplodeAndFallUntilStableSync(state)
 
+	state.score = 0
+
 	return state
 }
 
