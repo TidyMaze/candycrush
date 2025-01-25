@@ -46,10 +46,9 @@ func buildUI() UI {
 		if changed {
 			ui.animationStep = Explode
 			ui.animationSince = time.Now()
+			ui.globalDestroyed = exploded
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
-
-			ui.globalDestroyed = exploded
 		} else {
 			println("Explode and fall until stable finished")
 			ui.animationStep = Idle
