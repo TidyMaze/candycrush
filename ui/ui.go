@@ -99,6 +99,14 @@ type UI struct {
 	clickables         []widget.Clickable
 }
 
+func (ui *UI) GetCell(x, y int) engine.Cell {
+	return ui.engine.GetCell(x, y)
+}
+
+func (ui *UI) SetCell(x, y int, cell engine.Cell) {
+	ui.engine.SetCell(x, y, cell)
+}
+
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
 
@@ -108,7 +116,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	if ui.engine.State.Board.Cells[cellY][cellX] == engine.Empty {
+	if ui.GetCell(cellX, cellY) == engine.Empty {
 		println("Empty cell, skipping")
 		return
 	}

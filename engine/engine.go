@@ -19,6 +19,14 @@ type Engine struct {
 	Delay                         func()
 }
 
+func (e *Engine) GetCell(x, y int) Cell {
+	return e.State.GetCell(x, y)
+}
+
+func (e *Engine) SetCell(x, y int, cell Cell) {
+	e.State.SetCell(x, y, cell)
+}
+
 func (e *Engine) Width() int {
 	return e.State.Width()
 }
@@ -41,7 +49,7 @@ func (e *Engine) Init() State {
 	for i := 0; i < height; i++ {
 		board.Cells[i] = make([]Cell, width)
 		for j := 0; j < width; j++ {
-			board.Cells[i][j] = Empty
+			board.SetCell(j, i, Empty)
 		}
 	}
 
