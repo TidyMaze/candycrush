@@ -177,6 +177,10 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	ui.setAnimStep(Swap)
 
+	if ui.engine.Delay == nil {
+		panic("Delay is nil")
+	}
+
 	// swap the 2 cells in state
 	ui.engine.State = ui.engine.Swap(ui.engine.State, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
