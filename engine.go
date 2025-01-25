@@ -188,26 +188,26 @@ func (e *Engine) findAllExploding(state State) [][]bool {
  * Explode candies (if there are 3 or more in a row or column)
  */
 func (e *Engine) explode(state State) (State, [][]bool) {
-	state = state.clone()
+	newState := state.clone()
 
 	score := 0
 
-	exploding := e.findAllExploding(state)
+	exploding := e.findAllExploding(newState)
 
 	// Explode candies
-	for i := 0; i < state.Board.Height; i++ {
-		for j := 0; j < state.Board.Width; j++ {
+	for i := 0; i < newState.Board.Height; i++ {
+		for j := 0; j < newState.Board.Width; j++ {
 			if exploding[i][j] {
-				state.Board.Cells[i][j] = Empty
+				newState.Board.Cells[i][j] = Empty
 				score++
 			}
 		}
 	}
 
 	// Update score
-	state.score += score
+	newState.score += score
 
-	return state, exploding
+	return newState, exploding
 }
 
 func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
