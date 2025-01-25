@@ -253,7 +253,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 	newGameState, changed, exploded := engine.ExplodeAndScore(gameState)
 
 	if changed {
-		destroying = true
+		animationStep = Explode
 		destroyingSince = time.Now()
 		println(fmt.Sprintf("Setting destroying to true, destroyingSince: %s", destroyingSince))
 
@@ -318,7 +318,7 @@ func onFallFinished() {
 
 func onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
-	destroying = false
+	animationStep = Idle
 
 	// explode while possible
 	engine.ExplodeAndFallUntilStable()

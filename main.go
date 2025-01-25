@@ -34,9 +34,19 @@ var theme = material.NewTheme()
 
 var circlesHovered []image.Point
 
-const ANIMATION_SLEEP_MS = 500
+const ANIMATION_SLEEP_MS = 200
 
-var destroying = false
+type AnimationStep int
+
+const (
+	Idle AnimationStep = iota
+	Swap
+	Explode
+	Fall
+	Refill
+)
+
+var animationStep = Idle
 var destroyingSince = time.Now()
 var destroyed [][]bool = nil
 
@@ -181,11 +191,7 @@ func draw(window *app.Window) error {
 			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
 
 			// draw the background (same dimensions as the window), either white or black (destroying)
-			backgroundColor := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
-
-			if destroying {
-				backgroundColor = color.NRGBA{R: 100, G: 100, B: 100, A: 255}
-			}
+			backgroundColor := getBackgroundColor()
 
 			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
 
@@ -254,6 +260,23 @@ func draw(window *app.Window) error {
 	}
 }
 
+func getBackgroundColor() color.NRGBA {
+	switch animationStep {
+	case Idle:
+		return whiteColor
+	case Explode:
+		return redColor
+	case Swap:
+		return blueColor
+	case Fall:
+		return greenColor
+	case Refill:
+		return purpleColor
+	default:
+		panic(fmt.Sprintf("Invalid animation step: %d", animationStep))
+	}
+}
+
 func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, pressed bool, dragStart f32.Point, alreadySwapped bool) (f32.Point, bool, f32.Point, bool) {
 	for {
 		ev, ok := source.Event(pointer.Filter{
@@ -318,7 +341,7 @@ func drawGrid(gtx layout.Context) {
 		for j := 0; j < gameState.Board.Width; j++ {
 			sizePct := defaultSizePct
 
-			if destroying && destroyed != nil && destroyed[i][j] {
+			if animationStep == Explode && destroyed != nil && destroyed[i][j] {
 				sizePct = destroyedSizePct
 			}
 
@@ -428,6 +451,7 @@ func drawRect(gtx layout.Context, x, y, width, height int, color color.NRGBA) {
 }
 
 var emptyColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+var whiteColor = color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 var redColor = color.NRGBA{R: 255, G: 0, B: 0, A: 255}
 var yellowColor = color.NRGBA{R: 255, G: 255, B: 0, A: 255}
 var greenColor = color.NRGBA{R: 0, G: 220, B: 0, A: 255}
