@@ -39,7 +39,7 @@ func buildUI() UI {
 		engine:         engine,
 	}
 
-	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
+	ui.engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			ui.setAnimStep(Explode)
 			ui.setAnimStart()
@@ -52,26 +52,26 @@ func buildUI() UI {
 		}
 	}
 
-	engine.HandleExplodeFinished = func(fallen [][]bool) {
+	ui.engine.HandleExplodeFinished = func(fallen [][]bool) {
 		ui.setAnimStep(Fall)
 		ui.setAnimStart()
 		ui.fallen = fallen
 	}
 
-	engine.HandleExplodeFinishedNoChange = func() {
+	ui.engine.HandleExplodeFinishedNoChange = func() {
 		ui.setAnimStep(Idle)
 	}
 
-	engine.HandleFallFinished = func(newFilled [][]bool) {
+	ui.engine.HandleFallFinished = func(newFilled [][]bool) {
 		ui.filled = newFilled
 		ui.setAnimStart()
 	}
 
-	engine.HandleAddMissingCandies = func() {
+	ui.engine.HandleAddMissingCandies = func() {
 		ui.setAnimStep(Refill)
 	}
 
-	engine.Delay = func() {
+	ui.engine.Delay = func() {
 		println(fmt.Sprintf("Sleeping for %d ms", AnimationSleepMs))
 		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
