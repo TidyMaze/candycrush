@@ -83,6 +83,8 @@ const ANIMATION_SLEEP_MS = 200
 
 var theme = material.NewTheme()
 
+const UseStateAsBackgroundColor = false
+
 type AnimationStep int
 
 const (
@@ -101,8 +103,6 @@ type UI struct {
 	fallen         [][]bool
 	engine         Engine
 }
-
-const UseStateAsBackgroundColor = false
 
 type Ball struct {
 	Location     f32.Point
