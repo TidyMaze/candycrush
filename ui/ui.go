@@ -87,16 +87,6 @@ var theme = material.NewTheme()
 
 const UseStateAsBackgroundColor = true
 
-type AnimationStep int
-
-const (
-	Idle AnimationStep = iota
-	Swap
-	Explode
-	Fall
-	Refill
-)
-
 type UI struct {
 	animationStep      AnimationStep
 	animationSince     time.Time
