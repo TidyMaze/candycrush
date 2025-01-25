@@ -260,7 +260,7 @@ func (e *Engine) Fall(state State) (State, [][]bool) {
 
 func (e *Engine) ExplodeAndFallUntilStable() {
 	// explode while possible
-	newGameState, changed, exploded := engine.ExplodeAndScore(gameState)
+	newGameState, changed, exploded := globalEngine.ExplodeAndScore(globalState)
 
 	if changed {
 		animationStep = Explode
@@ -271,7 +271,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
-			gameState = newGameState
+			globalState = newGameState
 			onExplodeFinished(changed)
 		}()
 	} else {
@@ -283,16 +283,16 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 	// explode while possible
 	for {
-		newGameState, changed, _ := engine.ExplodeAndScore(gameState)
+		newGameState, changed, _ := globalEngine.ExplodeAndScore(gameState)
 		gameState = newGameState
 
 		if changed {
 			animationStep = Fall
-			newGameState, _ := engine.Fall(gameState)
+			newGameState, _ := globalEngine.Fall(gameState)
 			gameState = newGameState
 
 			// add missing candies
-			newGameState2, newFilled := engine.AddMissingCandies(gameState)
+			newGameState2, newFilled := globalEngine.AddMissingCandies(gameState)
 			gameState = newGameState2
 			globalFilled = newFilled
 		} else {
@@ -311,13 +311,13 @@ func onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
 	if explodedChanged {
-		newGameState, fallen := engine.Fall(gameState)
+		newGameState, fallen := globalEngine.Fall(globalState)
 
 		animationStep = Fall
 		animationSince = time.Now()
 
 		go func() {
-			gameState = newGameState
+			globalState = newGameState
 			globalFallen = fallen
 
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
@@ -332,9 +332,9 @@ func onFallFinished() {
 	println("Fall finished")
 
 	// add missing candies
-	newGameState, newFilled := engine.AddMissingCandies(gameState)
+	newGameState, newFilled := globalEngine.AddMissingCandies(globalState)
 
-	gameState = newGameState
+	globalState = newGameState
 	globalFilled = newFilled
 
 	go func() {
@@ -351,7 +351,7 @@ func onAddMissingCandiesFinished() {
 	go func() {
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
 		// explode while possible
-		engine.ExplodeAndFallUntilStable()
+		globalEngine.ExplodeAndFallUntilStable()
 	}()
 }
 

@@ -23,18 +23,14 @@ import (
 	"time"
 )
 
-var engine Engine = Engine{}
-var gameState State = engine.InitRandom()
+var globalEngine Engine = Engine{}
+var globalState State = globalEngine.InitRandom()
 
+// ui constants
 const cellSizeDp = unit.Dp(75)
-
-const textSize = unit.Sp(24)
+const ANIMATION_SLEEP_MS = 200
 
 var theme = material.NewTheme()
-
-var circlesHovered []image.Point
-
-const ANIMATION_SLEEP_MS = 200
 
 type AnimationStep int
 
@@ -79,7 +75,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	if gameState.Board.Cells[cellY][cellX] == Empty {
+	if globalState.Board.Cells[cellY][cellX] == Empty {
 		println("Empty cell, skipping")
 		return
 	}
@@ -132,7 +128,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	animationStep = Swap
 
 	// swap the 2 cells in state
-	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+	globalState = globalEngine.Swap(globalState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
@@ -145,7 +141,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 func onSwapFinished() {
 	println("Swap finished")
-	engine.ExplodeAndFallUntilStable()
+	globalEngine.ExplodeAndFallUntilStable()
 }
 
 var lastFramesDuration []time.Duration = make([]time.Duration, 0)
@@ -240,7 +236,7 @@ func draw(window *app.Window) error {
 			}
 
 			// draw the score with size
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", gameState.score)).Layout(gtx)
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", globalState.score)).Layout(gtx)
 
 			// draw FPS counter
 			fps := computeFPS(lastFramesDuration)
@@ -368,8 +364,8 @@ func drawGrid(gtx layout.Context) {
 
 	//destroyedSizePct := 0.5
 
-	for i := 0; i < gameState.Board.Height; i++ {
-		for j := 0; j < gameState.Board.Width; j++ {
+	for i := 0; i < globalState.Board.Height; i++ {
+		for j := 0; j < globalState.Board.Width; j++ {
 			sizePct := defaultSizePct
 
 			switch animationStep {
@@ -393,7 +389,7 @@ func drawGrid(gtx layout.Context) {
 				}
 			}
 
-			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct), fallPct)
+			drawCell(cellSizeDp, gtx, j, i, globalState.Board.Cells[i][j], float32(sizePct), fallPct)
 		}
 	}
 	//print(".")
@@ -447,7 +443,7 @@ func drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell C
 		Y:         cellY,
 		Cell:      cell,
 		cellSize:  cellSize,
-		clickable: &clickables[cellY*gameState.Board.Width+cellX],
+		clickable: &clickables[cellY*globalState.Board.Width+cellX],
 	}
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
@@ -550,12 +546,12 @@ func runUI() {
 		window := new(app.Window)
 
 		window.Option(app.Size(
-			unit.Dp(gameState.Board.Width)*cellSizeDp,
-			unit.Dp(gameState.Board.Height)*cellSizeDp,
+			unit.Dp(globalState.Board.Width)*cellSizeDp,
+			unit.Dp(globalState.Board.Height)*cellSizeDp,
 		))
 
 		// create clickables
-		clickables = make([]widget.Clickable, gameState.Board.Width*gameState.Board.Height)
+		clickables = make([]widget.Clickable, globalState.Board.Width*globalState.Board.Height)
 
 		err := run(window)
 		if err != nil {
