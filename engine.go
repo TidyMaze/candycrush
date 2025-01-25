@@ -232,13 +232,15 @@ Fall candies: move candies down to fill empty cells
 func (e *Engine) Fall(state State) State {
 	animationStep = Fall
 
-	for j := 0; j < state.Board.Width; j++ {
-		for i := state.Board.Height - 1; i >= 0; i-- {
-			if state.Board.Cells[i][j] == Empty {
+	newState := state.clone()
+
+	for j := 0; j < newState.Board.Width; j++ {
+		for i := newState.Board.Height - 1; i >= 0; i-- {
+			if newState.Board.Cells[i][j] == Empty {
 				for k := i - 1; k >= 0; k-- {
-					if state.Board.Cells[k][j] != Empty {
-						state.Board.Cells[i][j] = state.Board.Cells[k][j]
-						state.Board.Cells[k][j] = Empty
+					if newState.Board.Cells[k][j] != Empty {
+						newState.Board.Cells[i][j] = newState.Board.Cells[k][j]
+						newState.Board.Cells[k][j] = Empty
 						break
 					}
 				}
@@ -246,7 +248,7 @@ func (e *Engine) Fall(state State) State {
 		}
 	}
 
-	return state
+	return newState
 }
 
 func (e *Engine) ExplodeAndFallUntilStable() {
