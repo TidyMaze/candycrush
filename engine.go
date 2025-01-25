@@ -300,10 +300,9 @@ func onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
 	if explodedChanged {
-		gameState = engine.Fall(gameState)
-
 		go func() {
 			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			gameState = engine.Fall(gameState)
 			onFallFinished()
 		}()
 	} else {
