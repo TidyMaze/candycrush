@@ -220,11 +220,9 @@ func (e *Engine) explode(state State) (State, [][]bool) {
 }
 
 func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
-	engine := Engine{}
-
 	changed := false
 
-	newState, exploded := engine.explode(state)
+	newState, exploded := e.explode(state)
 	if newState.score != state.score {
 		changed = true
 		state = newState
