@@ -169,7 +169,8 @@ func onSwapFinished() {
 	engine.ExplodeAndFallUntilStable()
 }
 
-var lastFramesDuration []time.Duration = make([]time.Duration, 60)
+var lastFramesDuration []time.Duration = make([]time.Duration, 0)
+var lastFrameTime = time.Now()
 
 func draw(window *app.Window) error {
 	var ops op.Ops
@@ -274,12 +275,26 @@ func draw(window *app.Window) error {
 
 			e.Frame(gtx.Ops)
 
+			// update the FPS counter
+			lastFramesDuration = append(lastFramesDuration, time.Since(lastFrameTime))
+			keepFrames := 60
+
+			if len(lastFramesDuration) > keepFrames {
+				lastFramesDuration = lastFramesDuration[len(lastFramesDuration)-keepFrames:]
+			}
+
+			lastFrameTime = time.Now()
+
 			window.Invalidate()
 		}
 	}
 }
 
 func computeFPS(lastFramesDuration []time.Duration) int {
+	if len(lastFramesDuration) == 0 {
+		return 0
+	}
+
 	sum := time.Duration(0)
 
 	for _, duration := range lastFramesDuration {
