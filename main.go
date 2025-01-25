@@ -148,6 +148,7 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 }
 
 func onSwapFinished() {
+	println("Swap finished")
 	engine.ExplodeAndFallUntilStable()
 }
 
@@ -183,7 +184,7 @@ func draw(window *app.Window) error {
 			backgroundColor := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 
 			if destroying {
-				backgroundColor = color.NRGBA{R: 0, G: 0, B: 0, A: 255}
+				backgroundColor = color.NRGBA{R: 100, G: 100, B: 100, A: 255}
 			}
 
 			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
@@ -308,23 +309,23 @@ func drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
 
 	// linear interpolation
-	destroyedSizePct := lerpRange(1, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(destroyingSince).Milliseconds()))
-	destroyedSizePct = math.Max(0, destroyedSizePct)
+	//destroyedSizePct := lerpRange(1, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(destroyingSince).Milliseconds()))
+	//destroyedSizePct = math.Max(0, destroyedSizePct)
+
+	destroyedSizePct := 0.5
 
 	for i := 0; i < gameState.Board.Height; i++ {
 		for j := 0; j < gameState.Board.Width; j++ {
 			sizePct := defaultSizePct
 
 			if destroying && destroyed != nil && destroyed[i][j] {
-				println(fmt.Sprintf("Destroyed cell at %d, %d", i, j))
-
 				sizePct = destroyedSizePct
-				println(fmt.Sprintf("Size pct: %f", sizePct))
 			}
 
 			drawCell(cellSizeDp, gtx, j, i, gameState.Board.Cells[i][j], float32(sizePct))
 		}
 	}
+	//print(".")
 }
 
 type CellWidget struct {

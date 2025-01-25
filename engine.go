@@ -243,7 +243,6 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 		}()
 	} else {
 		println("Explode and fall until stable finished")
-		destroying = false
 	}
 }
 
@@ -272,8 +271,6 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 func onExplodeFinished(explodedChanged bool) {
 	println("Explode finished")
 
-	destroying = false
-
 	if explodedChanged {
 		gameState = engine.Fall(gameState)
 	}
@@ -298,6 +295,7 @@ func onFallFinished() {
 
 func onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
+	destroying = false
 
 	// explode while possible
 	engine.ExplodeAndFallUntilStable()
