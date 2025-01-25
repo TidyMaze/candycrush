@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-func buildUI() UI {
+func buildUI() *UI {
 
 	engine := engine.Engine{}
 
@@ -76,7 +76,7 @@ func buildUI() UI {
 		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
 
-	return ui
+	return &ui
 }
 
 // ui constants
