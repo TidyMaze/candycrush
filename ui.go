@@ -75,7 +75,7 @@ func buildUI() UI {
 
 // ui constants
 const cellSizeDp = unit.Dp(75)
-const ANIMATION_SLEEP_MS = 200
+const AnimationSleepMs = 200
 
 var theme = material.NewTheme()
 
@@ -186,7 +186,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	// schedule onSwapFinished for later (1s)
 	go func() {
 		// sleep for 1s
-		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+		time.Sleep(AnimationSleepMs * time.Millisecond)
 
 		ui.onSwapFinished()
 	}()
@@ -422,12 +422,12 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			case Explode:
 				if ui.destroyed != nil && ui.destroyed[i][j] {
 					// linear interpolation
-					sizePct = lerp(defaultSizePct, 0, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
+					sizePct = lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
 				if ui.filled != nil && ui.filled[i][j] {
-					sizePct = lerp(0, defaultSizePct, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
+					sizePct = lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 
@@ -435,7 +435,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 			if ui.animationStep == Fall {
 				if ui.fallen != nil && ui.fallen[i][j] {
-					fallPct = lerp(0, 1, 0, float64(ANIMATION_SLEEP_MS), float64(time.Since(ui.animationSince).Milliseconds()))
+					fallPct = lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
 				}
 			}
 

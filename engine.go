@@ -275,7 +275,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 
 	if changed {
 		go func() {
-			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			time.Sleep(AnimationSleepMs * time.Millisecond)
 			e.state = newGameState
 			e.onExplodeFinished(changed)
 		}()
@@ -317,7 +317,7 @@ func (e *Engine) onExplodeFinished(explodedChanged bool) {
 		go func() {
 			e.state = newGameState
 
-			time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+			time.Sleep(AnimationSleepMs * time.Millisecond)
 			e.onFallFinished()
 		}()
 	} else {
@@ -338,7 +338,7 @@ func (e *Engine) onFallFinished() {
 	}
 
 	go func() {
-		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+		time.Sleep(AnimationSleepMs * time.Millisecond)
 		e.onAddMissingCandiesFinished()
 	}()
 }
@@ -347,7 +347,7 @@ func (e *Engine) onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
 
 	go func() {
-		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+		time.Sleep(AnimationSleepMs * time.Millisecond)
 		// explode while possible
 		e.ExplodeAndFallUntilStable()
 	}()
