@@ -277,7 +277,7 @@ func draw(window *app.Window) error {
 
 			// update the FPS counter
 			lastFramesDuration = append(lastFramesDuration, time.Since(lastFrameTime))
-			keepFrames := 60
+			keepFrames := 120
 
 			if len(lastFramesDuration) > keepFrames {
 				lastFramesDuration = lastFramesDuration[len(lastFramesDuration)-keepFrames:]
