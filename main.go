@@ -34,7 +34,7 @@ var theme = material.NewTheme()
 
 var circlesHovered []image.Point
 
-const ANIMATION_SLEEP_MS = 200
+const ANIMATION_SLEEP_MS = 1000
 
 type AnimationStep int
 
@@ -146,13 +146,16 @@ func onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		offset = f32.Point{X: 1, Y: 0}
 	}
 
-	// swap the 2 cells in state
-	gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+	animationStep = Swap
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
 		// sleep for 1s
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
+
+		// swap the 2 cells in state
+		gameState = engine.Swap(gameState, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+
 		onSwapFinished()
 	}()
 }

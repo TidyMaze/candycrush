@@ -230,6 +230,7 @@ func (e *Engine) ExplodeAndScore(state State) (State, bool, [][]bool) {
 Fall candies: move candies down to fill empty cells
 */
 func (e *Engine) Fall(state State) State {
+	animationStep = Fall
 
 	for j := 0; j < state.Board.Width; j++ {
 		for i := state.Board.Height - 1; i >= 0; i-- {
@@ -282,6 +283,7 @@ func (e *Engine) ExplodeAndFallUntilStableSync(gameState State) State {
 			gameState = engine.AddMissingCandies(gameState)
 		} else {
 			println("No more explosions for this loop")
+			animationStep = Idle
 			break
 		}
 	}
@@ -325,6 +327,8 @@ func onAddMissingCandiesFinished() {
 }
 
 func (e *Engine) AddMissingCandies(state State) State {
+	animationStep = Refill
+
 	for j := 0; j < state.Board.Width; j++ {
 		for i := 0; i < state.Board.Height; i++ {
 			if state.Board.Cells[i][j] == Empty {
