@@ -110,15 +110,6 @@ type Ball struct {
 	color        color.NRGBA
 }
 
-type Direction int
-
-const (
-	Up Direction = iota
-	Down
-	Left
-	Right
-)
-
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
 
