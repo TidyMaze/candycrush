@@ -324,7 +324,6 @@ func onFallFinished() {
 
 func onAddMissingCandiesFinished() {
 	println("Add missing candies finished")
-	animationStep = Idle
 
 	go func() {
 		time.Sleep(ANIMATION_SLEEP_MS * time.Millisecond)
