@@ -358,8 +358,8 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 	//destroyedSizePct := 0.5
 
-	for i := 0; i < ui.engine.State.Board.Height; i++ {
-		for j := 0; j < ui.engine.State.Board.Width; j++ {
+	for i := 0; i < ui.Height(); i++ {
+		for j := 0; j < ui.Width(); j++ {
 			sizePct := defaultSizePct
 
 			switch ui.animationStep {
@@ -415,7 +415,7 @@ func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY in
 		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
 	}
 
-	clickable := &ui.clickables[cellY*ui.engine.State.Board.Width+cellX]
+	clickable := &ui.clickables[cellY*ui.Width()+cellX]
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
 	fallOffset := (1 - fallPct) * float64(gtx.Dp(cellSizeDp))
