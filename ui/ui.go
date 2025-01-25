@@ -100,10 +100,6 @@ type UI struct {
 }
 
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
-	if ui.engine.Delay == nil {
-		panic("Delay is nil")
-	}
-
 	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
 
 	// find the cell at the dragStart
@@ -164,10 +160,6 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	ui.setAnimStep(Swap)
 
-	if ui.engine.Delay == nil {
-		panic("Delay is nil")
-	}
-
 	// swap the 2 cells in state
 	ui.engine.State = ui.engine.Swap(ui.engine.State, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
 
@@ -199,10 +191,6 @@ func (ui *UI) draw(window *app.Window) error {
 	alreadySwapped := false
 
 	for {
-		if ui.engine.Delay == nil {
-			panic("Delay is nil")
-		}
-
 		switch e := window.Event().(type) {
 		case app.DestroyEvent:
 			return e.Err
@@ -497,13 +485,7 @@ func getColor(cell engine.Cell) color.NRGBA {
 }
 
 func (ui *UI) run(window *app.Window) error {
-
-	if ui.engine.Delay == nil {
-		panic("Delay is nil")
-	}
-
 	ui.draw(window)
-
 	return nil
 }
 
@@ -539,10 +521,6 @@ func RunUI() {
 
 	if ui.engine.State.Board.Width <= 0 || ui.engine.State.Board.Height <= 0 {
 		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.engine.State.Board.Width, ui.engine.State.Board.Height))
-	}
-
-	if ui.engine.Delay == nil {
-		panic("Delay is nil")
 	}
 
 	go func() {
