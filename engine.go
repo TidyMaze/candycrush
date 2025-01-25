@@ -33,6 +33,27 @@ type State struct {
 	score int
 }
 
+func (s *State) clone() State {
+	// deep copy
+	newBoard := Board{
+		Width:  s.Board.Width,
+		Height: s.Board.Height,
+		Cells:  make([][]Cell, s.Board.Height),
+	}
+
+	for i := 0; i < s.Board.Height; i++ {
+		newBoard.Cells[i] = make([]Cell, s.Board.Width)
+		for j := 0; j < s.Board.Width; j++ {
+			newBoard.Cells[i][j] = s.Board.Cells[i][j]
+		}
+	}
+
+	return State{
+		Board: newBoard,
+		score: s.score,
+	}
+}
+
 type Engine struct{}
 
 func (e *Engine) Init() State {
@@ -167,6 +188,8 @@ func (e *Engine) findAllExploding(state State) [][]bool {
  * Explode candies (if there are 3 or more in a row or column)
  */
 func (e *Engine) explode(state State) (State, [][]bool) {
+	state = state.clone()
+
 	score := 0
 
 	exploding := e.findAllExploding(state)
