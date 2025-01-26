@@ -17,14 +17,13 @@ func NewController() *Controller {
 	engine := engine.Engine{}
 	engine.InitRandom()
 
-	uiInst := ui.BuildUI()
+	uiInst := ui.BuildUI(&engine.State)
 
 	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			uiInst.SetAnimStep(ui.Explode)
 			uiInst.SetAnimStart()
 			uiInst.Destroyed = exploded
-			uiInst.SetState(engine.State)
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", uiInst.AnimationSince))
 		} else {
@@ -37,23 +36,19 @@ func NewController() *Controller {
 		uiInst.SetAnimStep(ui.Fall)
 		uiInst.SetAnimStart()
 		uiInst.Fallen = fallen
-		uiInst.SetState(engine.State)
 	}
 
 	engine.HandleExplodeFinishedNoChange = func() {
 		uiInst.SetAnimStep(ui.Idle)
-		uiInst.SetState(engine.State)
 	}
 
 	engine.HandleFallFinished = func(newFilled [][]bool) {
 		uiInst.Filled = newFilled
 		uiInst.SetAnimStart()
-		uiInst.SetState(engine.State)
 	}
 
 	engine.HandleAddMissingCandies = func() {
 		uiInst.SetAnimStep(ui.Refill)
-		uiInst.SetState(engine.State)
 	}
 
 	engine.OnScoreUpdated = func(score int) {
@@ -66,15 +61,12 @@ func NewController() *Controller {
 
 	uiInst.OnSwap = func(fromX, fromY, toX, toY int) {
 		engine.State = engine.Swap(engine.State, fromX, fromY, toX, toY)
-		uiInst.SetState(engine.State)
 	}
 
 	uiInst.OnSwapFinished = func() {
 		println("Swap finished")
 		engine.ExplodeAndFallUntilStable()
 	}
-
-	uiInst.SetState(engine.State)
 
 	return &Controller{
 		engine: &engine,

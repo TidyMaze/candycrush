@@ -32,7 +32,7 @@ var theme = material.NewTheme()
 
 const UseStateAsBackgroundColor = true
 
-func BuildUI() *UI {
+func BuildUI(state *engine.State) *UI {
 
 	ui := UI{
 		animationStep:  Idle,
@@ -46,6 +46,8 @@ func BuildUI() *UI {
 		println(fmt.Sprintf("Sleeping for %d ms", AnimationSleepMs))
 		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
+
+	ui.state = state
 
 	return &ui
 }
@@ -63,7 +65,7 @@ type UI struct {
 	Delay              func()
 	OnSwapFinished     func()
 	score              int
-	state              engine.State
+	state              *engine.State
 }
 
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
@@ -352,10 +354,6 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 		}
 	}
 	//print(".")
-}
-
-func (ui *UI) SetState(state engine.State) {
-	ui.state = state
 }
 
 func drawCircle(
