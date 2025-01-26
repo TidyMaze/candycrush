@@ -315,8 +315,6 @@ func (ui *UI) handleEvents(source input.Source, tag *bool) {
 func (ui *UI) drawGrid(gtx layout.Context) {
 	defaultSizePct := 0.95
 
-	//destroyedSizePct := 0.5
-
 	for i := 0; i < ui.Height(); i++ {
 		for j := 0; j < ui.Width(); j++ {
 			c := engine.Coord{X: j, Y: i}
