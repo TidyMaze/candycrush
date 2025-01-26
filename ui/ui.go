@@ -148,9 +148,9 @@ func (ui *UI) draw(window *app.Window) error {
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
+			gtx := app.NewContext(&ops, e)
 			// mouse handler tag
 			event.Op(&ops, tag)
-			gtx := app.NewContext(&ops, e)
 
 			// handle events and draw frame
 			ui.drawBackground(gtx)
