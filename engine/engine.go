@@ -20,6 +20,29 @@ type Engine struct {
 	OnScoreUpdated                func(score int)
 }
 
+func (e *Engine) FindValidMoves(state State) []Action {
+	var validMoves []Action
+
+	for i := 0; i < state.Height(); i++ {
+		for j := 0; j < state.Width(); j++ {
+			if i > 0 {
+				validMoves = append(validMoves, Action{From: Coord{X: j, Y: i}, To: Coord{X: j, Y: i - 1}})
+			}
+			if i < state.Height()-1 {
+				validMoves = append(validMoves, Action{From: Coord{X: j, Y: i}, To: Coord{X: j, Y: i + 1}})
+			}
+			if j > 0 {
+				validMoves = append(validMoves, Action{From: Coord{X: j, Y: i}, To: Coord{X: j - 1, Y: i}})
+			}
+			if j < state.Width()-1 {
+				validMoves = append(validMoves, Action{From: Coord{X: j, Y: i}, To: Coord{X: j + 1, Y: i}})
+			}
+		}
+	}
+
+	return validMoves
+}
+
 func (e *Engine) GetCell(coord Coord) Cell {
 	return e.State.GetCell(coord.X, coord.Y)
 }
