@@ -152,61 +152,16 @@ func (ui *UI) draw(window *app.Window) error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
-
-			//println(fmt.Sprintf("Drawing frame %d", displayedTick))
-
-			// draw the background (same dimensions as the window), either white or black (destroying)
 			backgroundColor := ui.getBackgroundColor()
-
 			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
-
 			ui.drawGrid(gtx)
-
-			//drawCircle(0, 0, gtx, redColor, 50)
-
-			// print the mouse position
 			event.Op(&ops, tag)
 
 			source := e.Source
 
 			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
 
-			//println(fmt.Sprintf("Mouse location: %+v", mouseLocation))
-
-			// draw circle at the drag start location
-			if dragStart.X != -1 && dragStart.Y != -1 {
-				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
-			}
-
-			// draw a circle at the mouse location
-			color := redColor
-
-			if dragStart.X != -1 && dragStart.Y != -1 {
-				distance := utils.Distance(dragStart, mouseLocation)
-
-				if pressed {
-					color = slightOrange
-				}
-
-				if distance > 100 {
-					color = slightBlue
-					println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
-
-					if !alreadySwapped {
-						ui.onDragFar(dragStart, mouseLocation, gtx)
-						alreadySwapped = true
-					}
-				}
-
-				drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
-
-				if distance > 200 {
-					// reset the drag start
-					dragStart = f32.Point{X: -1, Y: -1}
-				}
-			} else {
-				drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
-			}
+			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
 
 			// draw the score with size
 			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.score)).Layout(gtx)
@@ -236,6 +191,45 @@ func (ui *UI) draw(window *app.Window) error {
 			window.Invalidate()
 		}
 	}
+}
+
+func (ui *UI) drawAndHandleMouse(dragStart f32.Point, gtx layout.Context, mouseLocation f32.Point, pressed bool, alreadySwapped bool) (bool, f32.Point) {
+	// draw circle at the drag start location
+	if dragStart.X != -1 && dragStart.Y != -1 {
+		drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
+	}
+
+	// draw a circle at the mouse location
+	color := redColor
+
+	if dragStart.X != -1 && dragStart.Y != -1 {
+		distance := utils.Distance(dragStart, mouseLocation)
+
+		if pressed {
+			color = slightOrange
+		}
+
+		if distance > 100 {
+			color = slightBlue
+			println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
+
+			if !alreadySwapped {
+				ui.onDragFar(dragStart, mouseLocation, gtx)
+				alreadySwapped = true
+			}
+		}
+
+		drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
+
+		if distance > 200 {
+			// reset the drag start
+			dragStart = f32.Point{X: -1, Y: -1}
+		}
+	} else {
+		drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
+	}
+
+	return alreadySwapped, dragStart
 }
 
 func computeFPS(lastFramesDuration []time.Duration) int {
