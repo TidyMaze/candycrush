@@ -151,19 +151,22 @@ func (ui *UI) draw(window *app.Window) error {
 		case app.DestroyEvent:
 			return e.Err
 		case app.FrameEvent:
+			// mouse handler tag
+			event.Op(&ops, tag)
 			gtx := app.NewContext(&ops, e)
+
+			// handle events and draw frame
 			ui.drawBackground(gtx)
 			ui.drawGrid(gtx)
-			event.Op(&ops, tag)
-
 			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(e.Source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
 			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
-
 			ui.drawScore(theme, gtx)
 			ui.handleFPS(gtx, theme)
 
+			// send the frame to the window
 			e.Frame(gtx.Ops)
 
+			// schedule a redraw
 			window.Invalidate()
 		}
 	}
