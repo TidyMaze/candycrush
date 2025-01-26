@@ -152,8 +152,7 @@ func (ui *UI) draw(window *app.Window) error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
-			backgroundColor := ui.getBackgroundColor()
-			drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
+			ui.drawBackground(gtx)
 			ui.drawGrid(gtx)
 			event.Op(&ops, tag)
 
@@ -171,6 +170,11 @@ func (ui *UI) draw(window *app.Window) error {
 			window.Invalidate()
 		}
 	}
+}
+
+func (ui *UI) drawBackground(gtx layout.Context) {
+	backgroundColor := ui.getBackgroundColor()
+	drawRect(gtx, 0, 0, int(gtx.Constraints.Max.X), int(gtx.Constraints.Max.Y), backgroundColor)
 }
 
 func (ui *UI) handleFPS(gtx layout.Context, theme *material.Theme) {
