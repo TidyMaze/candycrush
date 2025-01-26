@@ -320,7 +320,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			sizePct := ui.findCellSizeForState(c)
 			fallPct := ui.findCellFallForState(c)
 
-			ui.drawCell(cellSizeDp, gtx, j, i, ui.state.GetCell(c), float32(sizePct), fallPct)
+			ui.drawCell(cellSizeDp, gtx, c, ui.state.GetCell(c), float32(sizePct), fallPct)
 		}
 	}
 }
@@ -374,13 +374,13 @@ func drawCircle(
 	paint.FillShape(gtx.Ops, color, ellipse.Op(gtx.Ops))
 }
 
-func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY int, cell engine.Cell, sizePct float32, fallPct float64) {
+func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, coord engine.Coord, cell engine.Cell, sizePct float32, fallPct float64) {
 
-	if cellX < 0 || cellY < 0 {
-		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", cellX, cellY))
+	if coord.X < 0 || coord.Y < 0 {
+		panic(fmt.Sprintf("Invalid negative cell position: %d, %d", coord.X, coord.Y))
 	}
 
-	clickable := &ui.clickables[cellY*ui.Width()+cellX]
+	clickable := &ui.clickables[coord.Y*ui.Width()+coord.X]
 
 	// offset based on the fallPct (0 is 1 cell up, 1 is the normal position)
 	fallOffset := (1 - fallPct) * float64(gtx.Dp(cellSizeDp))
@@ -388,8 +388,8 @@ func (ui *UI) drawCell(cellSize unit.Dp, gtx layout.Context, cellX int, cellY in
 	// size offset
 	emptySize := float32(gtx.Dp(cellSizeDp)) * (1 - sizePct)
 
-	cellGlobalX := cellX*gtx.Dp(cellSize) + int(emptySize/2)
-	cellGlobalY := cellY*gtx.Dp(cellSize) - int(fallOffset) + int(emptySize/2)
+	cellGlobalX := coord.X*gtx.Dp(cellSize) + int(emptySize/2)
+	cellGlobalY := coord.Y*gtx.Dp(cellSize) - int(fallOffset) + int(emptySize/2)
 
 	stack := op.Offset(image.Point{X: cellGlobalX, Y: cellGlobalY}).Push(gtx.Ops)
 
