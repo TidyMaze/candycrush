@@ -324,7 +324,6 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			switch ui.animationStep {
 			case Explode:
 				if ui.Destroyed != nil && ui.Destroyed[i][j] {
-					// linear interpolation
 					sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
