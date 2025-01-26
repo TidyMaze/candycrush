@@ -70,8 +70,10 @@ func NewController() *Controller {
 
 	return &Controller{
 		engine: &myEngine,
-		ai:     ai.AI{},
-		ui:     uiInst,
+		ai: ai.AI{
+			InnerEngine: &myEngine,
+		},
+		ui: uiInst,
 	}
 }
 
