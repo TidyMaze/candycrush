@@ -156,10 +156,7 @@ func (ui *UI) draw(window *app.Window) error {
 			ui.drawGrid(gtx)
 			event.Op(&ops, tag)
 
-			source := e.Source
-
-			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
-
+			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(e.Source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
 			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
 
 			ui.drawScore(theme, gtx)
