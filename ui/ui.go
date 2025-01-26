@@ -172,19 +172,22 @@ func (ui *UI) draw(window *app.Window) error {
 
 			e.Frame(gtx.Ops)
 
-			// update the FPS counter
-			ui.lastFramesDuration = append(ui.lastFramesDuration, time.Since(ui.lastFrameTime))
-			keepFrames := 120
-
-			if len(ui.lastFramesDuration) > keepFrames {
-				ui.lastFramesDuration = ui.lastFramesDuration[len(ui.lastFramesDuration)-keepFrames:]
-			}
-
-			ui.lastFrameTime = time.Now()
+			ui.updateFPSCounter()
 
 			window.Invalidate()
 		}
 	}
+}
+
+func (ui *UI) updateFPSCounter() {
+	ui.lastFramesDuration = append(ui.lastFramesDuration, time.Since(ui.lastFrameTime))
+	keepFrames := 120
+
+	if len(ui.lastFramesDuration) > keepFrames {
+		ui.lastFramesDuration = ui.lastFramesDuration[len(ui.lastFramesDuration)-keepFrames:]
+	}
+
+	ui.lastFrameTime = time.Now()
 }
 
 func (ui *UI) drawFPS(gtx layout.Context, theme *material.Theme, fps int) {
