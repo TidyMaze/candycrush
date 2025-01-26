@@ -108,19 +108,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		panic("Invalid direction")
 	}
 
-	// convert dir to offset
-	offset := f32.Point{X: 0, Y: 0}
-
-	switch dir {
-	case engine.Up:
-		offset = f32.Point{X: 0, Y: -1}
-	case engine.Down:
-		offset = f32.Point{X: 0, Y: 1}
-	case engine.Left:
-		offset = f32.Point{X: -1, Y: 0}
-	case engine.Right:
-		offset = f32.Point{X: 1, Y: 0}
-	}
+	offset := engine.DirToOffset(dir)
 
 	ui.SetAnimStep(Swap)
 
