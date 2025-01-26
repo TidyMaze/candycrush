@@ -28,8 +28,6 @@ import (
 const cellSizeDp = unit.Dp(75)
 const AnimationSleepMs = 200
 
-var theme = material.NewTheme()
-
 const UseStateAsBackgroundColor = true
 
 func BuildUI(state *engine.State) *UI {
@@ -145,6 +143,8 @@ func (ui *UI) draw(window *app.Window) error {
 	dragStart := f32.Point{X: -1, Y: -1}
 
 	alreadySwapped := false
+
+	theme := material.NewTheme()
 
 	for {
 		switch e := window.Event().(type) {
