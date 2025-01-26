@@ -318,19 +318,22 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 			c := engine.Coord{X: j, Y: i}
 
 			sizePct := ui.findCellSizeForState(c)
-
-			fallPct := float64(1)
-
-			if ui.animationStep == Fall {
-				if ui.Fallen != nil && ui.Fallen[i][j] {
-					fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
-				}
-			}
+			fallPct := ui.findCellFallForState(c)
 
 			ui.drawCell(cellSizeDp, gtx, j, i, ui.state.GetCell(c), float32(sizePct), fallPct)
 		}
 	}
-	//print(".")
+}
+
+func (ui *UI) findCellFallForState(c engine.Coord) float64 {
+	fallPct := float64(1)
+
+	if ui.animationStep == Fall {
+		if ui.Fallen != nil && ui.Fallen[c.Y][c.X] {
+			fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
+		}
+	}
+	return fallPct
 }
 
 func (ui *UI) findCellSizeForState(coord engine.Coord) float64 {
