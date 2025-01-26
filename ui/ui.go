@@ -325,11 +325,11 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 	}
 }
 
-func (ui *UI) findCellFallForState(c engine.Coord) float64 {
+func (ui *UI) findCellFallForState(coord engine.Coord) float64 {
 	fallPct := float64(1)
 
 	if ui.animationStep == Fall {
-		if ui.Fallen != nil && ui.Fallen[c.Y][c.X] {
+		if ui.Fallen != nil && ui.Fallen[coord.Y][coord.X] {
 			fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
 		}
 	}
