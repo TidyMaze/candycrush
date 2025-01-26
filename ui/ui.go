@@ -72,17 +72,43 @@ type UI struct {
 	alreadySwapped     bool
 }
 
-func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
-	println(fmt.Sprintf("Dragged far at %f, %f", dragStart.X, dragStart.Y))
+func (ui *UI) onDragFar(gtx layout.Context) {
+	println(fmt.Sprintf("Dragged far at %f, %f", ui.dragStart.X, ui.dragStart.Y))
 
 	// find the cell at the dragStart
-	cellX := int(gtx.Metric.PxToDp(int(dragStart.X)) / cellSizeDp)
-	cellY := int(gtx.Metric.PxToDp(int(dragStart.Y)) / cellSizeDp)
+	cellX := int(gtx.Metric.PxToDp(int(ui.dragStart.X)) / cellSizeDp)
+	cellY := int(gtx.Metric.PxToDp(int(ui.dragStart.Y)) / cellSizeDp)
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	// find the main drag direction (up, down, left, right)
+	dir := ui.findDragDirection(ui.dragStart, ui.mouseLocation)
 
+	if dir == -1 {
+		panic("Invalid direction")
+	}
+
+	from := engine.Coord{X: cellX, Y: cellY}
+	dest := engine.GetNeighbor(dir, from)
+
+	ui.SetAnimStep(Swap)
+
+	// swap the 2 cells in state
+	ui.OnSwap(engine.Action{
+		From: from,
+		To:   dest,
+	})
+
+	// schedule onSwapFinished for later (1s)
+	go func() {
+		if ui.Delay != nil {
+			ui.Delay()
+		}
+		ui.OnSwapFinished()
+	}()
+}
+
+func (ui *UI) findDragDirection(dragStart f32.Point, dragEnd f32.Point) engine.Direction {
+	// find the main drag direction (up, down, left, right)
 	verticalDiff := float64(dragEnd.Y - dragStart.Y)
 	horizontalDiff := float64(dragEnd.X - dragStart.X)
 
@@ -107,29 +133,7 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 			dir = engine.Left
 		}
 	}
-
-	if dir == -1 {
-		panic("Invalid direction")
-	}
-
-	from := engine.Coord{X: cellX, Y: cellY}
-	dest := engine.GetNeighbor(dir, from)
-
-	ui.SetAnimStep(Swap)
-
-	// swap the 2 cells in state
-	ui.OnSwap(engine.Action{
-		From: from,
-		To:   dest,
-	})
-
-	// schedule onSwapFinished for later (1s)
-	go func() {
-		if ui.Delay != nil {
-			ui.Delay()
-		}
-		ui.OnSwapFinished()
-	}()
+	return dir
 }
 
 func (ui *UI) SetScore(score int) {
@@ -222,7 +226,7 @@ func (ui *UI) drawAndHandleMouse(gtx layout.Context) {
 			println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, ui.mouseLocation.X, ui.mouseLocation.Y))
 
 			if !ui.alreadySwapped {
-				ui.onDragFar(ui.dragStart, ui.mouseLocation, gtx)
+				ui.onDragFar(gtx)
 				ui.alreadySwapped = true
 			}
 		}
