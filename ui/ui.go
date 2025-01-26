@@ -294,19 +294,19 @@ func (ui *UI) handleEvents(source input.Source, tag *bool) {
 			break
 		}
 
-		if x, ok := ev.(pointer.Event); ok {
-			switch x.Kind {
+		if pointerEvent, ok := ev.(pointer.Event); ok {
+			switch pointerEvent.Kind {
 			case pointer.Move:
-				ui.mouseLocation = x.Position
+				ui.mouseLocation = pointerEvent.Position
 			case pointer.Press:
 				ui.pressed = true
-				ui.dragStart = x.Position
+				ui.dragStart = pointerEvent.Position
 			case pointer.Release:
 				ui.pressed = false
 				ui.alreadySwapped = false
 				ui.dragStart = f32.Point{X: -1, Y: -1}
 			case pointer.Drag:
-				ui.mouseLocation = x.Position
+				ui.mouseLocation = pointerEvent.Position
 			}
 		}
 	}
