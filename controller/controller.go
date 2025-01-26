@@ -9,7 +9,7 @@ import (
 
 type Controller struct {
 	engine *engine.Engine
-	ai     ai.AI
+	ai     *ai.AI
 	ui     *ui.UI
 }
 
@@ -18,6 +18,16 @@ func NewController() *Controller {
 	myEngine.InitRandom()
 
 	uiInst := ui.BuildUI(&myEngine.State)
+
+	myAI := ai.AI{
+		InnerEngine: &myEngine,
+	}
+
+	cont := &Controller{
+		engine: &myEngine,
+		ai:     &myAI,
+		ui:     uiInst,
+	}
 
 	myEngine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
@@ -29,6 +39,7 @@ func NewController() *Controller {
 		} else {
 			println("Explode and fall until stable finished")
 			uiInst.SetAnimStep(ui.Idle)
+			cont.showAIMoves()
 		}
 	}
 
@@ -40,6 +51,7 @@ func NewController() *Controller {
 
 	myEngine.HandleExplodeFinishedNoChange = func() {
 		uiInst.SetAnimStep(ui.Idle)
+		cont.showAIMoves()
 	}
 
 	myEngine.HandleFallFinished = func(newFilled [][]bool) {
@@ -68,15 +80,13 @@ func NewController() *Controller {
 		myEngine.ExplodeAndFallUntilStable()
 	}
 
-	return &Controller{
-		engine: &myEngine,
-		ai: ai.AI{
-			InnerEngine: &myEngine,
-		},
-		ui: uiInst,
-	}
+	return cont
 }
 
 func (c *Controller) Run() {
 	ui.RunUI(c.ui)
+}
+
+func (c *Controller) showAIMoves() {
+	c.ai.FindBestMove(c.engine.State)
 }
