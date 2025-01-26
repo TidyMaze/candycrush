@@ -319,19 +319,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 		for j := 0; j < ui.Width(); j++ {
 			c := engine.Coord{X: j, Y: i}
 
-			sizePct := defaultSizePct
-
-			switch ui.animationStep {
-			case Explode:
-				if ui.Destroyed != nil && ui.Destroyed[i][j] {
-					sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
-					sizePct = math.Max(0, sizePct)
-				}
-			case Refill:
-				if ui.Filled != nil && ui.Filled[i][j] {
-					sizePct = utils.Lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
-				}
-			}
+			sizePct := ui.findCellSizeForState(defaultSizePct, i, j)
 
 			fallPct := float64(1)
 
@@ -345,6 +333,23 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 		}
 	}
 	//print(".")
+}
+
+func (ui *UI) findCellSizeForState(defaultSizePct float64, i int, j int) float64 {
+	sizePct := defaultSizePct
+
+	switch ui.animationStep {
+	case Explode:
+		if ui.Destroyed != nil && ui.Destroyed[i][j] {
+			sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
+			sizePct = math.Max(0, sizePct)
+		}
+	case Refill:
+		if ui.Filled != nil && ui.Filled[i][j] {
+			sizePct = utils.Lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
+		}
+	}
+	return sizePct
 }
 
 func drawCircle(
