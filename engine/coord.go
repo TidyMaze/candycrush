@@ -1,6 +1,6 @@
 package engine
 
 type Coord struct {
-	x int
-	y int
+	X int
+	Y int
 }

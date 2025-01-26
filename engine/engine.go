@@ -20,8 +20,8 @@ type Engine struct {
 	OnScoreUpdated                func(score int)
 }
 
-func (e *Engine) GetCell(x, y int) Cell {
-	return e.State.GetCell(x, y)
+func (e *Engine) GetCell(coord Coord) Cell {
+	return e.State.GetCell(coord.X, coord.Y)
 }
 
 func (e *Engine) SetCell(x, y int, cell Cell) {
@@ -91,13 +91,53 @@ func (e *Engine) randomCell() Cell {
 	return Cell(rand.Intn(6) + 1)
 }
 
-func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
-	if oldState.GetCell(x1, y1) == Empty || oldState.GetCell(x2, y2) == Empty {
-		println("Empty cell, skipping")
-		return oldState
+func (e *Engine) SwapAndExplode(x1, y1, x2, y2 int) {
+	newState := e.Swap(Action{
+		From: Coord{X: x1, Y: y1},
+		To:   Coord{X: x2, Y: y2},
+	})
+
+	e.State = newState
+
+	e.ExplodeAndFallUntilStable()
+}
+
+func (e *Engine) isValidAction(action Action) error {
+	if action.From.X < 0 || action.From.X >= e.State.Board.Width || action.From.Y < 0 || action.From.Y >= e.State.Height() {
+		return fmt.Errorf("invalid action: %v: out of bounds (from)", action)
 	}
 
-	state := oldState.clone()
+	if action.To.X < 0 || action.To.X >= e.State.Board.Width || action.To.Y < 0 || action.To.Y >= e.State.Height() {
+		return fmt.Errorf("invalid action: %v: out of bounds (to)", action)
+	}
+
+	if action.From.X == action.To.X && action.From.Y == action.To.Y {
+		return fmt.Errorf("invalid action: %v: same cell", action)
+	}
+
+	if action.From.X != action.To.X && action.From.Y != action.To.Y {
+		return fmt.Errorf("invalid action: %v: not adjacent", action)
+	}
+
+	if e.GetCell(action.From) == Empty || e.GetCell(action.To) == Empty {
+		return fmt.Errorf("invalid action: %v: empty cell", action)
+	}
+
+	return nil
+}
+
+func (e *Engine) Swap(action Action) State {
+	if err := e.isValidAction(action); err != nil {
+		println(fmt.Sprintf("Invalid action: %v: %v", action, err))
+		return e.State
+	}
+
+	state := e.State.clone()
+
+	x1 := action.From.X
+	y1 := action.From.Y
+	x2 := action.To.X
+	y2 := action.To.Y
 
 	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Height() {
 		return state

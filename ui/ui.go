@@ -61,7 +61,7 @@ type UI struct {
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
 	clickables         []widget.Clickable
-	OnSwap             func(fromX, fromY, toX, toY int)
+	OnSwap             func(action engine.Action)
 	Delay              func()
 	OnSwapFinished     func()
 	score              int
@@ -128,7 +128,10 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	destY := cellY + int(offset.Y)
 
 	// swap the 2 cells in state
-	ui.OnSwap(cellX, cellY, destX, destY)
+	ui.OnSwap(engine.Action{
+		From: engine.Coord{X: cellX, Y: cellY},
+		To:   engine.Coord{X: destX, Y: destY},
+	})
 
 	// schedule onSwapFinished for later (1s)
 	go func() {

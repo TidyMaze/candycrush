@@ -14,12 +14,12 @@ type Controller struct {
 }
 
 func NewController() *Controller {
-	engine := engine.Engine{}
-	engine.InitRandom()
+	myEngine := engine.Engine{}
+	myEngine.InitRandom()
 
-	uiInst := ui.BuildUI(&engine.State)
+	uiInst := ui.BuildUI(&myEngine.State)
 
-	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
+	myEngine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			uiInst.SetAnimStep(ui.Explode)
 			uiInst.SetAnimStart()
@@ -32,44 +32,44 @@ func NewController() *Controller {
 		}
 	}
 
-	engine.HandleExplodeFinished = func(fallen [][]bool) {
+	myEngine.HandleExplodeFinished = func(fallen [][]bool) {
 		uiInst.SetAnimStep(ui.Fall)
 		uiInst.SetAnimStart()
 		uiInst.Fallen = fallen
 	}
 
-	engine.HandleExplodeFinishedNoChange = func() {
+	myEngine.HandleExplodeFinishedNoChange = func() {
 		uiInst.SetAnimStep(ui.Idle)
 	}
 
-	engine.HandleFallFinished = func(newFilled [][]bool) {
+	myEngine.HandleFallFinished = func(newFilled [][]bool) {
 		uiInst.Filled = newFilled
 		uiInst.SetAnimStart()
 	}
 
-	engine.HandleAddMissingCandies = func() {
+	myEngine.HandleAddMissingCandies = func() {
 		uiInst.SetAnimStep(ui.Refill)
 	}
 
-	engine.OnScoreUpdated = func(score int) {
+	myEngine.OnScoreUpdated = func(score int) {
 		uiInst.SetScore(score)
 	}
 
-	engine.Delay = func() {
+	myEngine.Delay = func() {
 		uiInst.Delay()
 	}
 
-	uiInst.OnSwap = func(fromX, fromY, toX, toY int) {
-		engine.State = engine.Swap(engine.State, fromX, fromY, toX, toY)
+	uiInst.OnSwap = func(action engine.Action) {
+		myEngine.State = myEngine.Swap(action)
 	}
 
 	uiInst.OnSwapFinished = func() {
 		println("Swap finished")
-		engine.ExplodeAndFallUntilStable()
+		myEngine.ExplodeAndFallUntilStable()
 	}
 
 	return &Controller{
-		engine: &engine,
+		engine: &myEngine,
 		ai:     ai.AI{},
 		ui:     uiInst,
 	}

@@ -1,5 +1,5 @@
 package engine
 
 type Action struct {
-	from, to Coord
+	From, To Coord
 }
