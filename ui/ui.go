@@ -38,6 +38,8 @@ func BuildUI(state *engine.State) *UI {
 		Destroyed:      nil,
 		Filled:         nil,
 		Fallen:         nil,
+		mouseLocation:  f32.Point{X: -1, Y: -1},
+		dragStart:      f32.Point{X: -1, Y: -1},
 	}
 
 	ui.Delay = func() {
@@ -64,6 +66,10 @@ type UI struct {
 	OnSwapFinished     func()
 	score              int
 	state              *engine.State
+	mouseLocation      f32.Point
+	pressed            bool
+	dragStart          f32.Point
+	alreadySwapped     bool
 }
 
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
@@ -133,16 +139,7 @@ func (ui *UI) SetScore(score int) {
 
 func (ui *UI) draw(window *app.Window) error {
 	var ops op.Ops
-
 	tag := new(bool)
-
-	var mouseLocation f32.Point
-
-	pressed := false
-
-	dragStart := f32.Point{X: -1, Y: -1}
-
-	alreadySwapped := false
 
 	theme := material.NewTheme()
 
@@ -158,8 +155,8 @@ func (ui *UI) draw(window *app.Window) error {
 			// handle events and draw frame
 			ui.drawBackground(gtx)
 			ui.drawGrid(gtx)
-			mouseLocation, pressed, dragStart, alreadySwapped = handleEvents(e.Source, tag, mouseLocation, pressed, dragStart, alreadySwapped)
-			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
+			ui.handleEvents(e.Source, tag)
+			ui.drawAndHandleMouse(gtx)
 			ui.drawScore(theme, gtx)
 			ui.handleFPS(gtx, theme)
 
@@ -204,43 +201,41 @@ func (ui *UI) drawScore(theme *material.Theme, gtx layout.Context) layout.Dimens
 	return material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.score)).Layout(gtx)
 }
 
-func (ui *UI) drawAndHandleMouse(dragStart f32.Point, gtx layout.Context, mouseLocation f32.Point, pressed bool, alreadySwapped bool) (bool, f32.Point) {
+func (ui *UI) drawAndHandleMouse(gtx layout.Context) {
 	// draw circle at the drag start location
-	if dragStart.X != -1 && dragStart.Y != -1 {
-		drawCircle(int(dragStart.X), int(dragStart.Y), gtx, redColor, 10)
+	if ui.dragStart.X != -1 && ui.dragStart.Y != -1 {
+		drawCircle(int(ui.dragStart.X), int(ui.dragStart.Y), gtx, redColor, 10)
 	}
 
 	// draw a circle at the mouse location
 	color := redColor
 
-	if dragStart.X != -1 && dragStart.Y != -1 {
-		distance := utils.Distance(dragStart, mouseLocation)
+	if ui.dragStart.X != -1 && ui.dragStart.Y != -1 {
+		distance := utils.Distance(ui.dragStart, ui.mouseLocation)
 
-		if pressed {
+		if ui.pressed {
 			color = slightOrange
 		}
 
 		if distance > 100 {
 			color = slightBlue
-			println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, mouseLocation.X, mouseLocation.Y))
+			println(fmt.Sprintf("Drag threshold reached: %f at %f, %f", distance, ui.mouseLocation.X, ui.mouseLocation.Y))
 
-			if !alreadySwapped {
-				ui.onDragFar(dragStart, mouseLocation, gtx)
-				alreadySwapped = true
+			if !ui.alreadySwapped {
+				ui.onDragFar(ui.dragStart, ui.mouseLocation, gtx)
+				ui.alreadySwapped = true
 			}
 		}
 
-		drawCircle(int(dragStart.X), int(dragStart.Y), gtx, color, int(distance))
+		drawCircle(int(ui.dragStart.X), int(ui.dragStart.Y), gtx, color, int(distance))
 
 		if distance > 200 {
 			// reset the drag start
-			dragStart = f32.Point{X: -1, Y: -1}
+			ui.dragStart = f32.Point{X: -1, Y: -1}
 		}
 	} else {
-		drawCircle(int(mouseLocation.X), int(mouseLocation.Y), gtx, slightRed, 10)
+		drawCircle(int(ui.mouseLocation.X), int(ui.mouseLocation.Y), gtx, slightRed, 10)
 	}
-
-	return alreadySwapped, dragStart
 }
 
 func computeFPS(lastFramesDuration []time.Duration) int {
@@ -284,7 +279,7 @@ func (ui *UI) getBackgroundColor() color.NRGBA {
 	}
 }
 
-func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, pressed bool, dragStart f32.Point, alreadySwapped bool) (f32.Point, bool, f32.Point, bool) {
+func (ui *UI) handleEvents(source input.Source, tag *bool) {
 	for {
 		ev, ok := source.Event(pointer.Filter{
 			Target: tag,
@@ -298,20 +293,19 @@ func handleEvents(source input.Source, tag *bool, mouseLocation f32.Point, press
 		if x, ok := ev.(pointer.Event); ok {
 			switch x.Kind {
 			case pointer.Move:
-				mouseLocation = x.Position
+				ui.mouseLocation = x.Position
 			case pointer.Press:
-				pressed = true
-				dragStart = x.Position
+				ui.pressed = true
+				ui.dragStart = x.Position
 			case pointer.Release:
-				pressed = false
-				alreadySwapped = false
-				dragStart = f32.Point{X: -1, Y: -1}
+				ui.pressed = false
+				ui.alreadySwapped = false
+				ui.dragStart = f32.Point{X: -1, Y: -1}
 			case pointer.Drag:
-				mouseLocation = x.Position
+				ui.mouseLocation = x.Position
 			}
 		}
 	}
-	return mouseLocation, pressed, dragStart, alreadySwapped
 }
 
 func (ui *UI) drawGrid(gtx layout.Context) {
