@@ -164,19 +164,19 @@ func (ui *UI) draw(window *app.Window) error {
 			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
 
 			ui.drawScore(theme, gtx)
-
-			// draw FPS counter
-			fps := computeFPS(ui.lastFramesDuration)
-
-			ui.drawFPS(gtx, theme, fps)
+			ui.handleFPS(gtx, theme)
 
 			e.Frame(gtx.Ops)
-
-			ui.updateFPSCounter()
 
 			window.Invalidate()
 		}
 	}
+}
+
+func (ui *UI) handleFPS(gtx layout.Context, theme *material.Theme) {
+	fps := computeFPS(ui.lastFramesDuration)
+	ui.drawFPS(gtx, theme, fps)
+	ui.updateFPSCounter()
 }
 
 func (ui *UI) updateFPSCounter() {
