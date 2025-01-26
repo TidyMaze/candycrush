@@ -32,97 +32,36 @@ var theme = material.NewTheme()
 
 const UseStateAsBackgroundColor = true
 
-func buildUI() *UI {
-
-	engine := engine.Engine{}
-
-	engine.InitRandom()
+func BuildUI() *UI {
 
 	ui := UI{
 		animationStep:  Idle,
-		animationSince: time.Now(),
-		destroyed:      nil,
-		filled:         nil,
-		fallen:         nil,
+		AnimationSince: time.Now(),
+		Destroyed:      nil,
+		Filled:         nil,
+		Fallen:         nil,
 	}
 
-	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
-		if changed {
-			ui.setAnimStep(Explode)
-			ui.setAnimStart()
-			ui.destroyed = exploded
-			ui.setState(engine.State)
-
-			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
-		} else {
-			println("Explode and fall until stable finished")
-			ui.setAnimStep(Idle)
-		}
-	}
-
-	engine.HandleExplodeFinished = func(fallen [][]bool) {
-		ui.setAnimStep(Fall)
-		ui.setAnimStart()
-		ui.fallen = fallen
-		ui.setState(engine.State)
-	}
-
-	engine.HandleExplodeFinishedNoChange = func() {
-		ui.setAnimStep(Idle)
-		ui.setState(engine.State)
-	}
-
-	engine.HandleFallFinished = func(newFilled [][]bool) {
-		ui.filled = newFilled
-		ui.setAnimStart()
-		ui.setState(engine.State)
-	}
-
-	engine.HandleAddMissingCandies = func() {
-		ui.setAnimStep(Refill)
-		ui.setState(engine.State)
-	}
-
-	engine.OnScoreUpdated = func(score int) {
-		ui.setScore(score)
-	}
-
-	engine.Delay = func() {
-		ui.delay()
-	}
-
-	ui.delay = func() {
+	ui.Delay = func() {
 		println(fmt.Sprintf("Sleeping for %d ms", AnimationSleepMs))
 		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
-
-	ui.onSwap = func(fromX, fromY, toX, toY int) {
-		engine.State = engine.Swap(engine.State, fromX, fromY, toX, toY)
-		ui.setState(engine.State)
-	}
-
-	ui.onSwapFinished = func() {
-		println("Swap finished")
-		engine.ExplodeAndFallUntilStable()
-	}
-
-	ui.setState(engine.State)
 
 	return &ui
 }
 
 type UI struct {
 	animationStep      AnimationStep
-	animationSince     time.Time
-	destroyed          [][]bool
-	filled             [][]bool
-	fallen             [][]bool
+	AnimationSince     time.Time
+	Destroyed          [][]bool
+	Filled             [][]bool
+	Fallen             [][]bool
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
 	clickables         []widget.Clickable
-	onSwap             func(fromX, fromY, toX, toY int)
-	delay              func()
-	onSwapFinished     func()
+	OnSwap             func(fromX, fromY, toX, toY int)
+	Delay              func()
+	OnSwapFinished     func()
 	score              int
 	state              engine.State
 }
@@ -181,24 +120,24 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		offset = f32.Point{X: 1, Y: 0}
 	}
 
-	ui.setAnimStep(Swap)
+	ui.SetAnimStep(Swap)
 
 	destX := cellX + int(offset.X)
 	destY := cellY + int(offset.Y)
 
 	// swap the 2 cells in state
-	ui.onSwap(cellX, cellY, destX, destY)
+	ui.OnSwap(cellX, cellY, destX, destY)
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
-		if ui.delay != nil {
-			ui.delay()
+		if ui.Delay != nil {
+			ui.Delay()
 		}
-		ui.onSwapFinished()
+		ui.OnSwapFinished()
 	}()
 }
 
-func (ui *UI) setScore(score int) {
+func (ui *UI) SetScore(score int) {
 	println(fmt.Sprintf("Setting score to %d", score))
 	ui.score = score
 }
@@ -390,22 +329,22 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 			switch ui.animationStep {
 			case Explode:
-				if ui.destroyed != nil && ui.destroyed[i][j] {
+				if ui.Destroyed != nil && ui.Destroyed[i][j] {
 					// linear interpolation
-					sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+					sizePct = utils.Lerp(defaultSizePct, 0, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
 					sizePct = math.Max(0, sizePct)
 				}
 			case Refill:
-				if ui.filled != nil && ui.filled[i][j] {
-					sizePct = utils.Lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+				if ui.Filled != nil && ui.Filled[i][j] {
+					sizePct = utils.Lerp(0, defaultSizePct, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
 				}
 			}
 
 			fallPct := float64(1)
 
 			if ui.animationStep == Fall {
-				if ui.fallen != nil && ui.fallen[i][j] {
-					fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.animationSince).Milliseconds()))
+				if ui.Fallen != nil && ui.Fallen[i][j] {
+					fallPct = utils.Lerp(0, 1, 0, float64(AnimationSleepMs), float64(time.Since(ui.AnimationSince).Milliseconds()))
 				}
 			}
 
@@ -415,7 +354,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 	//print(".")
 }
 
-func (ui *UI) setState(state engine.State) {
+func (ui *UI) SetState(state engine.State) {
 	ui.state = state
 }
 
@@ -519,12 +458,12 @@ func (ui *UI) run(window *app.Window) error {
 	return nil
 }
 
-func (ui *UI) setAnimStart() {
+func (ui *UI) SetAnimStart() {
 	println("Setting animation start")
-	ui.animationSince = time.Now()
+	ui.AnimationSince = time.Now()
 }
 
-func (ui *UI) setAnimStep(step AnimationStep) {
+func (ui *UI) SetAnimStep(step AnimationStep) {
 	println(fmt.Sprintf("Setting animation step to %s", showAnimationStep(step)))
 	ui.animationStep = step
 }
@@ -554,9 +493,7 @@ func showAnimationStep(step AnimationStep) string {
 	}
 }
 
-func RunUI() {
-	ui := buildUI()
-
+func RunUI(ui *UI) {
 	if ui.Width() <= 0 || ui.Height() <= 0 {
 		panic(fmt.Sprintf("Invalid board dimensions: %d, %d", ui.Width(), ui.Height()))
 	}

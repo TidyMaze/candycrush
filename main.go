@@ -1,7 +1,10 @@
 package main
 
-import "candycrush/ui"
+import (
+	"candycrush/controller"
+)
 
 func main() {
-	ui.RunUI()
+	cont := controller.NewController()
+	cont.Run()
 }
