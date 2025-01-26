@@ -69,6 +69,7 @@ func buildUI() *UI {
 
 	engine.HandleExplodeFinishedNoChange = func() {
 		ui.setAnimStep(Idle)
+		ui.setState(engine.State)
 	}
 
 	engine.HandleFallFinished = func(newFilled [][]bool) {
@@ -79,6 +80,7 @@ func buildUI() *UI {
 
 	engine.HandleAddMissingCandies = func() {
 		ui.setAnimStep(Refill)
+		ui.setState(engine.State)
 	}
 
 	engine.OnScoreUpdated = func(score int) {
