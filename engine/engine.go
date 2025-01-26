@@ -17,6 +17,7 @@ type Engine struct {
 	HandleFallFinished            func(newFilled [][]bool)
 	HandleAddMissingCandies       func()
 	Delay                         func()
+	OnScoreUpdated                func(score int)
 }
 
 func (e *Engine) GetCell(x, y int) Cell {
@@ -91,6 +92,11 @@ func (e *Engine) randomCell() Cell {
 }
 
 func (e *Engine) Swap(oldState State, x1, y1, x2, y2 int) State {
+	if oldState.GetCell(x1, y1) == Empty || oldState.GetCell(x2, y2) == Empty {
+		println("Empty cell, skipping")
+		return oldState
+	}
+
 	state := oldState.clone()
 
 	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Height() {
@@ -226,6 +232,7 @@ func (e *Engine) ExplodeAndFallUntilStable() {
 				e.Delay()
 			}
 			e.State = newGameState
+			e.OnScoreUpdated(e.State.Score)
 			e.onExplodeFinished(changed)
 		}()
 	}

@@ -44,14 +44,14 @@ func buildUI() *UI {
 		destroyed:      nil,
 		filled:         nil,
 		fallen:         nil,
-		engine:         engine,
 	}
 
-	ui.engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
+	engine.HandleChangedAfterExplode = func(changed bool, exploded [][]bool) {
 		if changed {
 			ui.setAnimStep(Explode)
 			ui.setAnimStart()
 			ui.destroyed = exploded
+			ui.setState(engine.State)
 
 			println(fmt.Sprintf("Setting destroying to true, animationSince: %s", ui.animationSince))
 		} else {
@@ -60,29 +60,51 @@ func buildUI() *UI {
 		}
 	}
 
-	ui.engine.HandleExplodeFinished = func(fallen [][]bool) {
+	engine.HandleExplodeFinished = func(fallen [][]bool) {
 		ui.setAnimStep(Fall)
 		ui.setAnimStart()
 		ui.fallen = fallen
+		ui.setState(engine.State)
 	}
 
-	ui.engine.HandleExplodeFinishedNoChange = func() {
+	engine.HandleExplodeFinishedNoChange = func() {
 		ui.setAnimStep(Idle)
 	}
 
-	ui.engine.HandleFallFinished = func(newFilled [][]bool) {
+	engine.HandleFallFinished = func(newFilled [][]bool) {
 		ui.filled = newFilled
 		ui.setAnimStart()
+		ui.setState(engine.State)
 	}
 
-	ui.engine.HandleAddMissingCandies = func() {
+	engine.HandleAddMissingCandies = func() {
 		ui.setAnimStep(Refill)
 	}
 
-	ui.engine.Delay = func() {
+	engine.OnScoreUpdated = func(score int) {
+		ui.setScore(score)
+	}
+
+	engine.Delay = func() {
+		ui.delay()
+	}
+
+	ui.delay = func() {
 		println(fmt.Sprintf("Sleeping for %d ms", AnimationSleepMs))
 		time.Sleep(AnimationSleepMs * time.Millisecond)
 	}
+
+	ui.onSwap = func(fromX, fromY, toX, toY int) {
+		engine.State = engine.Swap(engine.State, fromX, fromY, toX, toY)
+		ui.setState(engine.State)
+	}
+
+	ui.onSwapFinished = func() {
+		println("Swap finished")
+		engine.ExplodeAndFallUntilStable()
+	}
+
+	ui.setState(engine.State)
 
 	return &ui
 }
@@ -93,18 +115,14 @@ type UI struct {
 	destroyed          [][]bool
 	filled             [][]bool
 	fallen             [][]bool
-	engine             engine.Engine
 	lastFramesDuration []time.Duration
 	lastFrameTime      time.Time
 	clickables         []widget.Clickable
-}
-
-func (ui *UI) GetCell(x, y int) engine.Cell {
-	return ui.engine.GetCell(x, y)
-}
-
-func (ui *UI) SetCell(x, y int, cell engine.Cell) {
-	ui.engine.SetCell(x, y, cell)
+	onSwap             func(fromX, fromY, toX, toY int)
+	delay              func()
+	onSwapFinished     func()
+	score              int
+	state              engine.State
 }
 
 func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
@@ -115,11 +133,6 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 	cellY := int(gtx.Metric.PxToDp(int(dragStart.Y)) / cellSizeDp)
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
-
-	if ui.GetCell(cellX, cellY) == engine.Empty {
-		println("Empty cell, skipping")
-		return
-	}
 
 	// find the main drag direction (up, down, left, right)
 
@@ -168,21 +181,24 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 
 	ui.setAnimStep(Swap)
 
+	destX := cellX + int(offset.X)
+	destY := cellY + int(offset.Y)
+
 	// swap the 2 cells in state
-	ui.engine.State = ui.engine.Swap(ui.engine.State, cellX, cellY, cellX+int(offset.X), cellY+int(offset.Y))
+	ui.onSwap(cellX, cellY, destX, destY)
 
 	// schedule onSwapFinished for later (1s)
 	go func() {
-		if ui.engine.Delay != nil {
-			ui.engine.Delay()
+		if ui.delay != nil {
+			ui.delay()
 		}
 		ui.onSwapFinished()
 	}()
 }
 
-func (ui *UI) onSwapFinished() {
-	println("Swap finished")
-	ui.engine.ExplodeAndFallUntilStable()
+func (ui *UI) setScore(score int) {
+	println(fmt.Sprintf("Setting score to %d", score))
+	ui.score = score
 }
 
 func (ui *UI) draw(window *app.Window) error {
@@ -261,7 +277,7 @@ func (ui *UI) draw(window *app.Window) error {
 			}
 
 			// draw the score with size
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.engine.State.Score)).Layout(gtx)
+			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.score)).Layout(gtx)
 
 			// draw FPS counter
 			fps := computeFPS(ui.lastFramesDuration)
@@ -391,10 +407,14 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 				}
 			}
 
-			ui.drawCell(cellSizeDp, gtx, j, i, ui.engine.State.Board.Cells[i][j], float32(sizePct), fallPct)
+			ui.drawCell(cellSizeDp, gtx, j, i, ui.state.GetCell(j, i), float32(sizePct), fallPct)
 		}
 	}
 	//print(".")
+}
+
+func (ui *UI) setState(state engine.State) {
+	ui.state = state
 }
 
 func drawCircle(
@@ -508,11 +528,11 @@ func (ui *UI) setAnimStep(step AnimationStep) {
 }
 
 func (ui *UI) Width() int {
-	return ui.engine.Width()
+	return ui.state.Width()
 }
 
 func (ui *UI) Height() int {
-	return ui.engine.Height()
+	return ui.state.Height()
 }
 
 func showAnimationStep(step AnimationStep) string {
