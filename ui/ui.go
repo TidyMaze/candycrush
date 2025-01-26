@@ -81,7 +81,7 @@ func (ui *UI) onDragFar(gtx layout.Context) {
 
 	println(fmt.Sprintf("Cell at %d, %d", cellX, cellY))
 
-	dir := ui.findDragDirection(ui.dragStart, ui.mouseLocation)
+	dir := ui.findDragDirection()
 
 	if dir == -1 {
 		panic("Invalid direction")
@@ -107,10 +107,10 @@ func (ui *UI) onDragFar(gtx layout.Context) {
 	}()
 }
 
-func (ui *UI) findDragDirection(dragStart f32.Point, dragEnd f32.Point) engine.Direction {
+func (ui *UI) findDragDirection() engine.Direction {
 	// find the main drag direction (up, down, left, right)
-	verticalDiff := float64(dragEnd.Y - dragStart.Y)
-	horizontalDiff := float64(dragEnd.X - dragStart.X)
+	verticalDiff := float64(ui.mouseLocation.Y - ui.dragStart.Y)
+	horizontalDiff := float64(ui.mouseLocation.X - ui.dragStart.X)
 
 	dir := engine.Direction(-1)
 
