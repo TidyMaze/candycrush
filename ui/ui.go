@@ -108,17 +108,15 @@ func (ui *UI) onDragFar(dragStart, dragEnd f32.Point, gtx layout.Context) {
 		panic("Invalid direction")
 	}
 
-	offset := engine.DirToOffset(dir)
+	from := engine.Coord{X: cellX, Y: cellY}
+	dest := engine.GetNeighbor(dir, from)
 
 	ui.SetAnimStep(Swap)
 
-	destX := cellX + int(offset.X)
-	destY := cellY + int(offset.Y)
-
 	// swap the 2 cells in state
 	ui.OnSwap(engine.Action{
-		From: engine.Coord{X: cellX, Y: cellY},
-		To:   engine.Coord{X: destX, Y: destY},
+		From: from,
+		To:   dest,
 	})
 
 	// schedule onSwapFinished for later (1s)
