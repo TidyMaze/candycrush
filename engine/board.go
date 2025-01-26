@@ -6,10 +6,10 @@ type Board struct {
 	Cells  [][]Cell
 }
 
-func (b *Board) SetCell(x, y int, cell Cell) {
-	b.Cells[y][x] = cell
+func (b *Board) SetCell(coord Coord, cell Cell) {
+	b.Cells[coord.Y][coord.X] = cell
 }
 
-func (b *Board) GetCell(x, y int) Cell {
-	return b.Cells[y][x]
+func (b *Board) GetCell(coord Coord) Cell {
+	return b.Cells[coord.Y][coord.X]
 }

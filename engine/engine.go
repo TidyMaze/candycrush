@@ -43,22 +43,6 @@ func (e *Engine) FindValidMoves(state State) []Action {
 	return validMoves
 }
 
-func (e *Engine) GetCell(coord Coord) Cell {
-	return e.State.GetCell(coord.X, coord.Y)
-}
-
-func (e *Engine) SetCell(x, y int, cell Cell) {
-	e.State.SetCell(x, y, cell)
-}
-
-func (e *Engine) Width() int {
-	return e.State.Width()
-}
-
-func (e *Engine) Height() int {
-	return e.State.Height()
-}
-
 func (e *Engine) Init() State {
 
 	width := 9
@@ -73,7 +57,8 @@ func (e *Engine) Init() State {
 	for i := 0; i < height; i++ {
 		board.Cells[i] = make([]Cell, width)
 		for j := 0; j < width; j++ {
-			board.SetCell(j, i, Empty)
+			c := Coord{X: j, Y: i}
+			board.SetCell(c, Empty)
 		}
 	}
 
@@ -87,9 +72,10 @@ func (e *Engine) InitRandom() {
 
 	e.State = e.Init()
 
-	for i := 0; i < e.State.Board.Height; i++ {
-		for j := 0; j < e.State.Board.Width; j++ {
-			e.setCell(j, i, e.randomCell())
+	for i := 0; i < e.State.Height(); i++ {
+		for j := 0; j < e.State.Width(); j++ {
+			c := Coord{X: j, Y: i}
+			e.State.SetCell(c, e.randomCell())
 		}
 	}
 
@@ -102,24 +88,16 @@ func (e *Engine) InitRandom() {
 	e.State.Score = 0
 }
 
-func (e *Engine) setCell(x, y int, cell Cell) {
-	e.State.SetCell(x, y, cell)
-}
-
-func (e *Engine) getCell(x, y int) Cell {
-	return e.State.GetCell(x, y)
-}
-
 func (e *Engine) randomCell() Cell {
 	return Cell(rand.Intn(6) + 1)
 }
 
 func (e *Engine) isValidAction(action Action) error {
-	if action.From.X < 0 || action.From.X >= e.State.Board.Width || action.From.Y < 0 || action.From.Y >= e.State.Height() {
+	if action.From.X < 0 || action.From.X >= e.State.Width() || action.From.Y < 0 || action.From.Y >= e.State.Height() {
 		return fmt.Errorf("invalid action: %v: out of bounds (from)", action)
 	}
 
-	if action.To.X < 0 || action.To.X >= e.State.Board.Width || action.To.Y < 0 || action.To.Y >= e.State.Height() {
+	if action.To.X < 0 || action.To.X >= e.State.Width() || action.To.Y < 0 || action.To.Y >= e.State.Height() {
 		return fmt.Errorf("invalid action: %v: out of bounds (to)", action)
 	}
 
@@ -131,7 +109,7 @@ func (e *Engine) isValidAction(action Action) error {
 		return fmt.Errorf("invalid action: %v: not adjacent", action)
 	}
 
-	if e.GetCell(action.From) == Empty || e.GetCell(action.To) == Empty {
+	if e.State.GetCell(action.From) == Empty || e.State.GetCell(action.To) == Empty {
 		return fmt.Errorf("invalid action: %v: empty cell", action)
 	}
 
@@ -160,7 +138,10 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 	// Explode rows
 	for i := 0; i < state.Height(); i++ {
 		for j := 0; j < state.Width()-2; j++ {
-			if state.GetCell(j, i) != Empty && state.GetCell(j, i) == state.GetCell(j+1, i) && state.GetCell(j, i) == state.GetCell(j+2, i) {
+			c := Coord{X: j, Y: i}
+			c2 := Coord{X: j + 1, Y: i}
+			c3 := Coord{X: j + 2, Y: i}
+			if state.GetCell(c) != Empty && state.GetCell(c) == state.GetCell(c2) && state.GetCell(c) == state.GetCell(c3) {
 				exploding[i][j] = true
 				exploding[i][j+1] = true
 				exploding[i][j+2] = true
@@ -171,7 +152,10 @@ func (e *Engine) findAllExploding(state State) [][]bool {
 	// Explode columns
 	for i := 0; i < state.Board.Height-2; i++ {
 		for j := 0; j < state.Board.Width; j++ {
-			if state.GetCell(j, i) != Empty && state.GetCell(j, i) == state.GetCell(j, i+1) && state.GetCell(j, i) == state.GetCell(j, i+2) {
+			c := Coord{X: j, Y: i}
+			c2 := Coord{X: j, Y: i + 1}
+			c3 := Coord{X: j, Y: i + 2}
+			if state.GetCell(c) != Empty && state.GetCell(c) == state.GetCell(c2) && state.GetCell(c) == state.GetCell(c3) {
 				exploding[i][j] = true
 				exploding[i+1][j] = true
 				exploding[i+2][j] = true
@@ -195,8 +179,9 @@ func (e *Engine) explode(state State) (State, [][]bool) {
 	// Explode candies
 	for i := 0; i < newState.Height(); i++ {
 		for j := 0; j < newState.Width(); j++ {
+			c := Coord{X: j, Y: i}
 			if exploding[i][j] {
-				newState.SetCell(j, i, Empty)
+				newState.SetCell(c, Empty)
 				score++
 			}
 		}
@@ -236,12 +221,14 @@ func (e *Engine) Fall(state State) (State, [][]bool) {
 
 	for j := 0; j < newState.Width(); j++ {
 		for i := newState.Height() - 1; i >= 0; i-- {
-			if newState.GetCell(j, i) == Empty {
+			c := Coord{X: j, Y: i}
+			if newState.GetCell(c) == Empty {
 				for k := i - 1; k >= 0; k-- {
-					if newState.GetCell(j, k) != Empty {
-						newState.SetCell(j, i, newState.GetCell(j, k))
+					c2 := Coord{X: j, Y: k}
+					if newState.GetCell(c2) != Empty {
+						newState.SetCell(c, newState.GetCell(c2))
 						fallen[i][j] = true
-						newState.SetCell(j, k, Empty)
+						newState.SetCell(c2, Empty)
 						break
 					}
 				}
@@ -349,8 +336,9 @@ func (e *Engine) AddMissingCandies(state State) (State, [][]bool) {
 
 	for j := 0; j < newState.Width(); j++ {
 		for i := 0; i < newState.Height(); i++ {
-			if newState.GetCell(j, i) == Empty {
-				newState.SetCell(j, i, e.randomCell())
+			c := Coord{X: j, Y: i}
+			if newState.GetCell(c) == Empty {
+				newState.SetCell(c, e.randomCell())
 
 				newFilledCellsTmp[i][j] = true
 			}

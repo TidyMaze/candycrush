@@ -316,6 +316,8 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 
 	for i := 0; i < ui.Height(); i++ {
 		for j := 0; j < ui.Width(); j++ {
+			c := engine.Coord{X: j, Y: i}
+
 			sizePct := defaultSizePct
 
 			switch ui.animationStep {
@@ -339,7 +341,7 @@ func (ui *UI) drawGrid(gtx layout.Context) {
 				}
 			}
 
-			ui.drawCell(cellSizeDp, gtx, j, i, ui.state.GetCell(j, i), float32(sizePct), fallPct)
+			ui.drawCell(cellSizeDp, gtx, j, i, ui.state.GetCell(c), float32(sizePct), fallPct)
 		}
 	}
 	//print(".")

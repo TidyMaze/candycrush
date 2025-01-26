@@ -6,17 +6,17 @@ type State struct {
 }
 
 func (s *State) SwapCells(from, to Coord) {
-	old := s.GetCell(from.X, from.Y)
-	s.SetCell(from.X, from.Y, s.GetCell(to.X, to.Y))
-	s.SetCell(to.X, to.Y, old)
+	old := s.GetCell(from)
+	s.SetCell(from, s.GetCell(to))
+	s.SetCell(to, old)
 }
 
-func (s *State) SetCell(x, y int, cell Cell) {
-	s.Board.SetCell(x, y, cell)
+func (s *State) SetCell(coord Coord, cell Cell) {
+	s.Board.SetCell(coord, cell)
 }
 
-func (s *State) GetCell(x, y int) Cell {
-	return s.Board.GetCell(x, y)
+func (s *State) GetCell(coord Coord) Cell {
+	return s.Board.GetCell(coord)
 }
 
 func (s *State) Width() int {
@@ -38,7 +38,8 @@ func (s *State) clone() State {
 	for i := 0; i < s.Height(); i++ {
 		newBoard.Cells[i] = make([]Cell, s.Width())
 		for j := 0; j < s.Width(); j++ {
-			newBoard.SetCell(j, i, s.GetCell(j, i))
+			c := Coord{X: j, Y: i}
+			newBoard.SetCell(c, s.GetCell(c))
 		}
 	}
 
