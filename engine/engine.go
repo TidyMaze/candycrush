@@ -133,7 +133,6 @@ func (e *Engine) Swap(action Action) State {
 	}
 
 	state := e.State.clone()
-
 	state.SwapCells(action.From, action.To)
 
 	return state
