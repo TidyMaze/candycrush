@@ -5,6 +5,12 @@ type State struct {
 	Score int
 }
 
+func (s *State) SwapCells(from, to Coord) {
+	old := s.GetCell(from.X, from.Y)
+	s.SetCell(from.X, from.Y, s.GetCell(to.X, to.Y))
+	s.SetCell(to.X, to.Y, old)
+}
+
 func (s *State) SetCell(x, y int, cell Cell) {
 	s.Board.SetCell(x, y, cell)
 }

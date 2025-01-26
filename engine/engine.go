@@ -134,24 +134,7 @@ func (e *Engine) Swap(action Action) State {
 
 	state := e.State.clone()
 
-	x1 := action.From.X
-	y1 := action.From.Y
-	x2 := action.To.X
-	y2 := action.To.Y
-
-	if x1 < 0 || x1 >= state.Board.Width || y1 < 0 || y1 >= state.Height() {
-		return state
-	}
-
-	if x2 < 0 || x2 >= state.Board.Width || y2 < 0 || y2 >= state.Height() {
-		return state
-	}
-
-	old1 := state.GetCell(x1, y1)
-	old2 := state.GetCell(x2, y2)
-
-	state.SetCell(x1, y1, old2)
-	state.SetCell(x2, y2, old1)
+	state.SwapCells(action.From, action.To)
 
 	return state
 }
