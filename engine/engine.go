@@ -91,17 +91,6 @@ func (e *Engine) randomCell() Cell {
 	return Cell(rand.Intn(6) + 1)
 }
 
-func (e *Engine) SwapAndExplode(x1, y1, x2, y2 int) {
-	newState := e.Swap(Action{
-		From: Coord{X: x1, Y: y1},
-		To:   Coord{X: x2, Y: y2},
-	})
-
-	e.State = newState
-
-	e.ExplodeAndFallUntilStable()
-}
-
 func (e *Engine) isValidAction(action Action) error {
 	if action.From.X < 0 || action.From.X >= e.State.Board.Width || action.From.Y < 0 || action.From.Y >= e.State.Height() {
 		return fmt.Errorf("invalid action: %v: out of bounds (from)", action)
