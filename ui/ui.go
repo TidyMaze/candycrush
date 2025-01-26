@@ -502,7 +502,6 @@ func RunUI(ui *UI) {
 			unit.Dp(ui.Height())*cellSizeDp,
 		))
 
-		// create clickables
 		ui.clickables = make([]widget.Clickable, ui.Width()*ui.Height())
 
 		err := ui.run(window)
