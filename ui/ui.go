@@ -163,18 +163,12 @@ func (ui *UI) draw(window *app.Window) error {
 
 			alreadySwapped, dragStart = ui.drawAndHandleMouse(dragStart, gtx, mouseLocation, pressed, alreadySwapped)
 
-			// draw the score with size
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.score)).Layout(gtx)
+			ui.drawScore(theme, gtx)
 
 			// draw FPS counter
 			fps := computeFPS(ui.lastFramesDuration)
 
-			// add offset for the FPS counter, to the stack
-			stack := op.Offset(image.Point{X: 500, Y: 0}).Push(gtx.Ops)
-
-			material.Label(theme, unit.Sp(24), fmt.Sprintf("FPS: %d", fps)).Layout(gtx)
-
-			stack.Pop()
+			ui.drawFPS(gtx, theme, fps)
 
 			e.Frame(gtx.Ops)
 
@@ -191,6 +185,16 @@ func (ui *UI) draw(window *app.Window) error {
 			window.Invalidate()
 		}
 	}
+}
+
+func (ui *UI) drawFPS(gtx layout.Context, theme *material.Theme, fps int) {
+	stack := op.Offset(image.Point{X: 500, Y: 0}).Push(gtx.Ops)
+	material.Label(theme, unit.Sp(24), fmt.Sprintf("FPS: %d", fps)).Layout(gtx)
+	stack.Pop()
+}
+
+func (ui *UI) drawScore(theme *material.Theme, gtx layout.Context) layout.Dimensions {
+	return material.Label(theme, unit.Sp(24), fmt.Sprintf("Score: %d", ui.score)).Layout(gtx)
 }
 
 func (ui *UI) drawAndHandleMouse(dragStart f32.Point, gtx layout.Context, mouseLocation f32.Point, pressed bool, alreadySwapped bool) (bool, f32.Point) {
